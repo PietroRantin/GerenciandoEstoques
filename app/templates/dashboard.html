@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% from "_macros.html" import situacao, mov_badge, vazio %}
+{% block title %}Início{% endblock %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <h1>Olá, {{ current_user.primeiro_nome }}!</h1>
+    <p class="text-muted mb-0">Veja como está o seu estoque hoje, {{ hoje|data }}.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2 no-print">
+    <a class="btn btn-success btn-lg" href="{{ url_for('sales.nova') }}"><i class="bi bi-cart-plus"></i> Nova venda</a>
+    <a class="btn btn-primary btn-lg" href="{{ url_for('inventory.entrada') }}"><i class="bi bi-box-arrow-in-down"></i> Registrar entrada</a>
+    <a class="btn btn-outline-primary btn-lg" href="{{ url_for('inventory.saida') }}"><i class="bi bi-box-arrow-up"></i> Registrar saída</a>
+  </div>
+</div>
+
+{# ---- Cartões principais ---- #}
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md-4 col-xl-3"><a class="kpi-link" href="{{ url_for('inventory.estoque') }}"><div class="card kpi"><div class="card-body">
+    <div class="rotulo"><i class="bi bi-box-seam"></i> Produtos cadastrados</div><div class="valor">{{ total_produtos }}</div></div></div></a></div>
+  <div class="col-6 col-md-4 col-xl-3"><a class="kpi-link" href="{{ url_for('inventory.estoque', situacao='sem_estoque') }}"><div class="card kpi kpi-danger"><div class="card-body">
+    <div class="rotulo"><i class="bi bi-x-octagon"></i> Em falta (zerados)</div><div class="valor text-danger">{{ sem_estoque }}</div></div></div></a></div>
+  <div class="col-6 col-md-4 col-xl-3"><a class="kpi-link" href="{{ url_for('alerts.index') }}#reposicao"><div class="card kpi kpi-warning"><div class="card-body">
+    <div class="rotulo"><i class="bi bi-exclamation-triangle"></i> Estoque baixo</div><div class="valor">{{ estoque_baixo }}</div></div></div></a></div>
+  <div class="col-6 col-md-4 col-xl-3"><a class="kpi-link" href="{{ url_for('alerts.validade') }}"><div class="card kpi kpi-warning"><div class="card-body">
+    <div class="rotulo"><i class="bi bi-calendar-event"></i> Lotes vencendo</div><div class="valor">{{ validade.vencendo }}</div></div></div></a></div>
+  <div class="col-6 col-md-4 col-xl-3"><a class="kpi-link" href="{{ url_for('alerts.validade', ordenar='validade') }}"><div class="card kpi kpi-danger"><div class="card-body">
+    <div class="rotulo"><i class="bi bi-calendar-x"></i> Lotes vencidos</div><div class="valor text-danger">{{ validade.vencidos }}</div></div></div></a></div>
+  <div class="col-6 col-md-4 col-xl-3"><div class="card kpi kpi-info"><div class="card-body">
+    <div class="rotulo"><i class="bi bi-cash-stack"></i> Valor do estoque (custo)</div><div class="valor fs-4">{{ valor_estoque|brl }}</div></div></div></div>
+  <div class="col-6 col-md-4 col-xl-3"><a class="kpi-link" href="{{ url_for('sales.listar') }}"><div class="card kpi kpi-success"><div class="card-body">
+    <div class="rotulo"><i class="bi bi-graph-up-arrow"></i> Vendas ({{ dias }} dias)</div><div class="valor fs-4">{{ vendas.faturamento|brl }}</div>
+    <small class="text-muted">{{ vendas.numero_vendas }} venda(s)</small></div></div></a></div>
+  <div class="col-6 col-md-4 col-xl-3"><div class="card kpi kpi-success"><div class="card-body">
+    <div class="rotulo"><i class="bi bi-basket"></i> Ticket médio</div><div class="valor fs-4">{{ vendas.ticket_medio|brl }}</div>
+    <small class="text-muted">valor médio por venda</small></div></div></div>
+</div>
+
+<div class="row g-3">
+  {# ---- Alertas importantes ---- #}
+  <div class="col-lg-5">
+    <div class="card h-100"><div class="card-header"><i class="bi bi-bell"></i> Alertas importantes</div><div class="card-body">
+      {% if sem_estoque %}<a class="alerta-linha critico" href="{{ url_for('inventory.estoque', situacao='sem_estoque') }}"><i class="bi bi-circle-fill"></i> <strong>{{ sem_estoque }}</strong> produto(s) sem estoque</a>{% endif %}
+      {% if validade.vencidos %}<a class="alerta-linha critico" href="{{ url_for('alerts.validade') }}"><i class="bi bi-circle-fill"></i> <strong>{{ validade.vencidos }}</strong> lote(s) vencido(s) — retire da venda</a>{% endif %}
+      {% if estoque_baixo %}<a class="alerta-linha alto" href="{{ url_for('alerts.index') }}#reposicao"><i class="bi bi-circle-fill"></i> <strong>{{ estoque_baixo }}</strong> produto(s) abaixo do ponto de pedido</a>{% endif %}
+      {% if validade.vencendo %}<a class="alerta-linha medio" href="{{ url_for('alerts.validade') }}"><i class="bi bi-circle-fill"></i> <strong>{{ validade.vencendo }}</strong> lote(s) vencendo nos próximos dias</a>{% endif %}
+      {% if not (sem_estoque or validade.vencidos or estoque_baixo or validade.vencendo) %}
+        <div class="alerta-linha ok"><i class="bi bi-check-circle-fill"></i> Tudo certo! Nenhum alerta no momento.</div>
+      {% endif %}
+      {% if vencendo %}
+      <h2 class="h6 mt-3">Próximos vencimentos</h2>
+      <ul class="list-unstyled mb-0">
+        {% for l in vencendo %}{% set d = (l.validade - hoje).days %}
+        <li class="d-flex justify-content-between border-bottom py-1">
+          <span><a href="{{ url_for('inventory.lote_detalhe', lote_id=l.id) }}">{{ l.produto.nome }}</a> <small class="text-muted">lote {{ l.numero }}</small></span>
+          <span class="badge text-bg-{{ 'danger' if d < 0 else ('warning' if d <= 7 else 'info') }}">{% if d < 0 %}vencido{% elif d == 0 %}vence hoje{% else %}{{ d }} dia(s){% endif %}</span>
+        </li>{% endfor %}
+      </ul>
+      {% endif %}
+    </div></div>
+  </div>
+
+  {# ---- Reposição ---- #}
+  <div class="col-lg-7">
+    <div class="card h-100"><div class="card-header d-flex justify-content-between align-items-center">
+      <span><i class="bi bi-cart-check"></i> Produtos que precisam de reposição</span>
+      {% if total_repor %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for('alerts.index') }}#reposicao">Ver todos ({{ total_repor }})</a>{% endif %}
+    </div><div class="card-body p-0">
+      {% if repor %}
+      <div class="table-responsive"><table class="table table-hover mb-0">
+        <thead><tr><th>Produto</th><th class="num">Estoque</th><th class="num">Ponto de pedido</th><th class="num">Comprar</th><th>Situação</th><th class="no-print"></th></tr></thead>
+        <tbody>{% for p in repor %}<tr>
+          <td><a href="{{ url_for('products.detalhe', produto_id=p.id) }}">{{ p.nome }}</a></td>
+          <td class="num fw-bold">{{ p.estoque_atual|qtd }} {{ p.unidade }}</td>
+          <td class="num">{{ p.ponto_pedido|qtd }}</td>
+          <td class="num">{{ p.quantidade_sugerida|qtd }}</td>
+          <td>{{ situacao(p) }}</td>
+          <td class="no-print"><a class="btn btn-sm btn-primary" href="{{ url_for('inventory.entrada', produto=p.id) }}" title="Registrar entrada de {{ p.nome }}"><i class="bi bi-plus-lg"></i> Entrada</a></td>
+        </tr>{% endfor %}</tbody>
+      </table></div>
+      {% else %}{{ vazio('Nenhum produto precisa de reposição agora.', 'emoji-smile') }}{% endif %}
+    </div></div>
+  </div>
+
+  {# ---- Vendas ---- #}
+  <div class="col-lg-7">
+    <div class="card h-100"><div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <span><i class="bi bi-bar-chart"></i> Vendas por dia (últimos {{ grafico|length }} dias)</span>
+      <div class="btn-group btn-group-sm no-print" role="group" aria-label="Período dos indicadores">
+        {% for d in (7, 30, 90) %}<a class="btn btn-outline-primary {% if d == dias %}active{% endif %}" href="{{ url_for('dashboard.index', dias=d) }}">{{ d }} dias</a>{% endfor %}
+      </div>
+    </div><div class="card-body">
+      {% if grafico|sum(attribute='total') > 0 %}
+      <div class="grafico-barras" role="img" aria-label="Gráfico de vendas por dia">
+        {% for g in grafico %}
+        <div class="barra" title="{{ g.dia|data }}: {{ g.total|brl }}">
+          <div class="preenchimento" style="height: {{ '%.1f'|format(g.percentual) }}%"></div>
+          <div class="dia">{{ g.dia.strftime('%d/%m') if loop.index is odd or grafico|length <= 14 else '' }}</div>
+        </div>{% endfor %}
+      </div>
+      <details class="mt-2"><summary class="small text-muted">Ver valores em tabela</summary>
+        <table class="table table-sm small mt-2"><tbody>{% for g in grafico|reverse %}<tr><td>{{ g.dia|data }}</td><td class="num">{{ g.total|brl }}</td></tr>{% endfor %}</tbody></table>
+      </details>
+      {% else %}{{ vazio('Ainda não há vendas registradas neste período.', 'bar-chart') }}{% endif %}
+    </div></div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card h-100"><div class="card-header"><i class="bi bi-trophy"></i> Mais vendidos ({{ dias }} dias)</div><div class="card-body p-0">
+      {% if mais_vendidos %}
+      <div class="table-responsive"><table class="table mb-0">
+        <thead><tr><th>Produto</th><th class="num">Vendido</th><th class="num">Faturamento</th><th class="num" title="Por quantos dias o estoque atual dura, no ritmo de vendas do período">Dura</th></tr></thead>
+        <tbody>{% for i in mais_vendidos %}<tr>
+          <td>{{ loop.index }}. <a href="{{ url_for('products.detalhe', produto_id=i.produto.id) }}">{{ i.produto.nome }}</a></td>
+          <td class="num">{{ i.quantidade|qtd }} {{ i.produto.unidade }}</td>
+          <td class="num">{{ i.faturamento|brl }}</td>
+          <td class="num">{% if i.cobertura_dias is none %}—{% else %}{% set c = i.cobertura_dias|round(0)|int %}<span class="{{ 'text-danger fw-bold' if c < 7 else '' }}">{{ c }} dia(s)</span>{% endif %}</td>
+        </tr>{% endfor %}</tbody>
+      </table></div>
+      <div class="px-3 py-2 small text-muted border-top"><strong>Maior giro:</strong>
+        {% for i in maior_giro %}{{ i.produto.nome }} ({{ i.giro|numero(1) }}x){{ ', ' if not loop.last }}{% endfor %}
+        <br>Giro = quantidade vendida ÷ estoque médio no período. "Dura" = dias até acabar no ritmo atual.</div>
+      {% else %}{{ vazio('Nenhuma venda no período.', 'trophy') }}{% endif %}
+    </div></div>
+  </div>
+
+  {# ---- Últimas movimentações ---- #}
+  <div class="col-12">
+    <div class="card"><div class="card-header d-flex justify-content-between align-items-center">
+      <span><i class="bi bi-clock-history"></i> Últimas movimentações</span>
+      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('inventory.movimentacoes') }}">Ver histórico completo</a>
+    </div><div class="card-body p-0">
+      {% if ultimas %}
+      <div class="table-responsive"><table class="table table-sm table-hover mb-0">
+        <thead><tr><th>Data/hora</th><th>Operação</th><th>Produto</th><th class="num">Quantidade</th><th class="num">Saldo após</th><th>Usuário</th></tr></thead>
+        <tbody>{% for m in ultimas %}<tr>
+          <td>{{ m.data_hora|datahora }}</td><td>{{ mov_badge(m) }} <small>{{ m.tipo_nome }}</small></td>
+          <td><a href="{{ url_for('products.detalhe', produto_id=m.product_id) }}">{{ m.produto.nome }}</a></td>
+          <td class="num">{{ '+' if m.natureza == 'entrada' else '−' }}{{ m.quantidade|qtd }}</td>
+          <td class="num">{{ m.saldo_apos|qtd }}</td><td>{{ m.usuario.nome }}</td>
+        </tr>{% endfor %}</tbody>
+      </table></div>
+      {% else %}{{ vazio('Nenhuma movimentação registrada ainda.') }}{% endif %}
+    </div></div>
+  </div>
+</div>
+{% endblock %}

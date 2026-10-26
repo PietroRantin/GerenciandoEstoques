@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_macros.html" import situacao, vazio %}
+{% block title %}Relatório de estoque{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-clipboard-data"></i> Relatório de estoque</h1>{% include "reports/_acoes.html" %}</div>
+<form class="card card-body mb-3 no-print" method="get"><div class="row g-2 align-items-end">
+  <div class="col-md-4"><label class="form-label" for="categoria">Categoria</label><select class="form-select" id="categoria" name="categoria"><option value="">Todas</option>
+    {% for c in categorias %}<option value="{{ c.id }}" {% if categoria_id == c.id %}selected{% endif %}>{{ c.nome }}</option>{% endfor %}</select></div>
+  <div class="col-md-4"><label class="form-label" for="situacao">Situação</label><select class="form-select" id="situacao" name="situacao">
+    {% for v, r in [('', 'Todas'), ('repor', 'Precisa repor'), ('sem_estoque', 'Sem estoque'), ('normal', 'Normal')] %}<option value="{{ v }}" {% if situacao == v %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></div>
+  <div class="col-md-2 d-grid"><button class="btn btn-primary" type="submit">Gerar</button></div>
+</div></form>
+<div class="card"><div class="card-body p-0">{% if produtos %}<div class="table-responsive"><table class="table table-sm table-hover mb-0">
+  <thead><tr><th>Produto</th><th>SKU</th><th>Categoria</th><th class="num">Estoque</th><th class="num">Mín.</th><th class="num">Máx.</th><th class="num">Ponto ped.</th><th>Situação</th><th class="num">Valor (custo)</th></tr></thead><tbody>
+  {% for p in produtos %}<tr><td>{{ p.nome }}</td><td><code>{{ p.sku }}</code></td><td>{{ p.categoria.nome if p.categoria else '—' }}</td>
+    <td class="num fw-bold">{{ p.estoque_atual|qtd }} {{ p.unidade }}</td><td class="num">{{ p.estoque_minimo|qtd }}</td><td class="num">{{ p.estoque_maximo|qtd }}</td>
+    <td class="num">{{ p.ponto_pedido|qtd }}</td><td>{{ situacao(p) }}</td><td class="num">{{ p.valor_estoque|brl }}</td></tr>{% endfor %}
+  </tbody><tfoot><tr><th colspan="8" class="text-end">{{ produtos|length }} produto(s) · valor total em estoque</th><th class="num">{{ total|brl }}</th></tr></tfoot></table></div>
+  {% else %}{{ vazio('Nenhum produto para os filtros escolhidos.') }}{% endif %}</div></div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Categorias{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-tags"></i> Categorias</h1>
+  <a class="btn btn-outline-secondary" href="{{ url_for('products.listar') }}"><i class="bi bi-arrow-left"></i> Produtos</a></div>
+<div class="row g-3">
+  <div class="col-lg-4"><div class="card"><div class="card-header">Nova categoria</div><div class="card-body">
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3"><label class="form-label" for="nome">Nome <span class="text-danger">*</span></label>
+        <input class="form-control {% if erros.nome %}is-invalid{% endif %}" id="nome" name="nome" maxlength="80" required value="{{ dados.get('nome', '') }}" placeholder="Ex.: Bebidas">
+        {% if erros.nome %}<div class="invalid-feedback">{{ erros.nome }}</div>{% endif %}</div>
+      <div class="mb-3"><label class="form-label" for="descricao">Descrição</label>
+        <input class="form-control" id="descricao" name="descricao" maxlength="255" value="{{ dados.get('descricao', '') }}"></div>
+      <button class="btn btn-primary w-100" type="submit"><i class="bi bi-plus-lg"></i> Cadastrar categoria</button>
+    </form></div></div></div>
+  <div class="col-lg-8"><div class="card"><div class="card-body p-0"><div class="table-responsive"><table class="table mb-0">
+    <thead><tr><th>Nome / descrição</th><th class="num">Produtos</th><th class="text-end">Ações</th></tr></thead><tbody>
+    {% for c in categorias %}<tr>
+      <td><form method="post" action="{{ url_for('products.editar_categoria', categoria_id=c.id) }}" class="d-flex flex-wrap gap-2" id="f{{ c.id }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input class="form-control form-control-sm" style="max-width:200px" name="nome" value="{{ c.nome }}" aria-label="Nome da categoria" required>
+        <input class="form-control form-control-sm" style="max-width:260px" name="descricao" value="{{ c.descricao or '' }}" aria-label="Descrição" placeholder="Descrição">
+        <button class="btn btn-sm btn-outline-primary" type="submit">Salvar</button></form></td>
+      <td class="num">{{ c.produtos.count() }}</td>
+      <td class="text-end"><form method="post" action="{{ url_for('products.excluir_categoria', categoria_id=c.id) }}" data-confirmar="Excluir a categoria &quot;{{ c.nome }}&quot;?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Excluir</button></form></td>
+    </tr>{% else %}<tr><td colspan="3" class="text-center text-muted py-4">Nenhuma categoria cadastrada.</td></tr>{% endfor %}
+    </tbody></table></div></div></div></div>
+</div>
+{% endblock %}

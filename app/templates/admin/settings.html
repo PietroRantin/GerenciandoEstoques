@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Configurações{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-gear"></i> Configurações</h1></div>
+<form method="post" class="card" style="max-width: 820px"><div class="card-body">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% for grupo, chaves in [('Loja', ['nome_loja']), ('Alertas de validade', ['validade_alerta_dias', 'validade_critico_dias']), ('Curva ABC', ['abc_limite_a', 'abc_limite_b', 'abc_periodo_dias']), ('Painel', ['dashboard_periodo_dias'])] %}
+  <h2 class="h5 mt-2">{{ grupo }}</h2>
+  <div class="row">{% for chave in chaves %}{% set d = definicoes[chave] %}
+    <div class="col-md-6 mb-3"><label class="form-label" for="{{ chave }}">{{ d[2] }}</label>
+      <input class="form-control" id="{{ chave }}" name="{{ chave }}" value="{{ valores[chave] }}" {% if valores[chave] is number %}type="number" min="0" max="3650"{% else %}maxlength="80"{% endif %} required></div>{% endfor %}
+  </div>{% endfor %}
+</div><div class="card-footer bg-white text-end"><button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-check-lg"></i> Salvar configurações</button></div></form>
+{% endblock %}

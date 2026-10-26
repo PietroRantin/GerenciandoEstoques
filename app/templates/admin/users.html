@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Usuários{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-people"></i> Usuários</h1>
+  <a class="btn btn-primary btn-lg" href="{{ url_for('admin.usuario_form') }}"><i class="bi bi-person-plus"></i> Cadastrar usuário</a></div>
+<div class="alert alert-light border small"><strong>Administrador:</strong> cadastra/edita/exclui produtos, vê relatórios e Curva ABC, gerencia usuários e configurações.
+  <strong>Operador:</strong> consulta estoque e produtos, registra entradas, saídas e vendas e vê alertas.</div>
+<div class="card"><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0">
+  <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Situação</th><th>Criado em</th><th></th></tr></thead><tbody>
+  {% for u in usuarios %}<tr class="{{ 'text-muted' if not u.ativo }}"><td>{{ u.nome }}{% if u.id == current_user.id %} <span class="badge text-bg-light border">você</span>{% endif %}</td><td>{{ u.email }}</td>
+    <td><span class="badge text-bg-{{ 'primary' if u.is_admin else 'secondary' }}">{{ u.perfil_nome }}</span></td>
+    <td>{{ 'Ativo' if u.ativo else 'Desativado' }}</td><td>{{ u.criado_em|data }}</td>
+    <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.usuario_form', usuario_id=u.id) }}">Editar</a></td></tr>{% endfor %}
+</tbody></table></div></div></div>
+{% endblock %}

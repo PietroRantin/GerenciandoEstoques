@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import vazio %}
+{% block title %}Relatório de vendas{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-cart3"></i> Relatório de vendas</h1>{% include "reports/_acoes.html" %}</div>
+<form class="card card-body mb-3 no-print" method="get"><div class="row g-2 align-items-end">
+  {% include "reports/_periodo.html" %}
+  <div class="col-md-4"><label class="form-label" for="produto">Produto</label><select class="form-select" id="produto" name="produto"><option value="">Todos</option>
+    {% for p in produtos %}<option value="{{ p.id }}" {% if product_id == p.id %}selected{% endif %}>{{ p.nome }}</option>{% endfor %}</select></div>
+  <div class="col-md-2 d-grid"><button class="btn btn-primary" type="submit">Gerar</button></div>
+</div></form>
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md-3"><div class="card kpi kpi-success"><div class="card-body"><div class="rotulo">Faturamento</div><div class="valor fs-4">{{ resumo.faturamento|brl }}</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card kpi"><div class="card-body"><div class="rotulo">Nº de vendas</div><div class="valor">{{ resumo.numero_vendas }}</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card kpi kpi-info"><div class="card-body"><div class="rotulo">Ticket médio</div><div class="valor fs-4">{{ resumo.ticket_medio|brl }}</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card kpi kpi-warning"><div class="card-body"><div class="rotulo">Itens vendidos</div><div class="valor">{{ resumo.itens_vendidos|qtd }}</div></div></div></div>
+</div>
+{% if grafico and grafico|sum(attribute='total') > 0 %}
+<div class="card mb-3"><div class="card-header">Evolução das vendas</div><div class="card-body">
+  <div class="grafico-barras" role="img" aria-label="Gráfico de vendas por dia">{% for g in grafico %}
+    <div class="barra" title="{{ g.dia|data }}: {{ g.total|brl }}"><div class="preenchimento" style="height: {{ '%.1f'|format(g.percentual) }}%"></div>
+      <div class="dia">{{ g.dia.strftime('%d/%m') if grafico|length <= 15 or loop.index0 % 5 == 0 else '' }}</div></div>{% endfor %}</div>
+</div></div>{% endif %}
+<div class="card"><div class="card-body p-0">{% if linhas %}<div class="table-responsive"><table class="table table-hover mb-0">
+  <thead><tr><th>Produto</th><th>SKU</th><th class="num">Quantidade</th><th class="num">Nº vendas</th><th class="num">Faturamento</th></tr></thead><tbody>
+  {% for p, q, f, n in linhas %}<tr><td>{{ p.nome }}</td><td><code>{{ p.sku }}</code></td><td class="num">{{ q|qtd }} {{ p.unidade }}</td><td class="num">{{ n }}</td><td class="num fw-bold">{{ f|brl }}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}{{ vazio('Nenhuma venda no período.') }}{% endif %}</div></div>
+{% endblock %}

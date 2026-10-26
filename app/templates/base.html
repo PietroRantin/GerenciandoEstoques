@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Início{% endblock %} · Estoque Fácil</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+{% set menu = [
+  ('dashboard.index', 'house-door', 'Início', False),
+  ('products.listar', 'box-seam', 'Produtos', False),
+  ('inventory.entrada', 'box-arrow-in-down', 'Entrada', False),
+  ('inventory.saida', 'box-arrow-up', 'Saída', False),
+  ('inventory.estoque', 'clipboard-data', 'Estoque', False),
+  ('sales.listar', 'cart3', 'Vendas', False),
+  ('alerts.index', 'bell', 'Alertas', False),
+  ('reports.curva_abc', 'bar-chart-steps', 'Curva ABC', True),
+  ('reports.index', 'file-earmark-text', 'Relatórios', True),
+  ('admin.usuarios', 'people', 'Usuários', True),
+  ('admin.configuracoes', 'gear', 'Configurações', True),
+] %}
+{% macro nav_links(menu) %}
+  {% for endpoint, icone, rotulo, so_admin in menu %}
+    {% if not so_admin or current_user.is_admin %}
+    {% set ativo = request.endpoint == endpoint or (request.blueprint == endpoint.split('.')[0] and endpoint.split('.')[0] not in ('inventory','reports','admin')) %}
+    <a class="nav-link {% if ativo %}active{% endif %}" href="{{ url_for(endpoint) }}" {% if ativo %}aria-current="page"{% endif %}>
+      <i class="bi bi-{{ icone }}" aria-hidden="true"></i> {{ rotulo }}
+      {% if endpoint == 'alerts.index' and total_alertas %}<span class="badge rounded-pill text-bg-danger ms-auto">{{ total_alertas }}</span>{% endif %}
+    </a>
+    {% endif %}
+  {% endfor %}
+{% endmacro %}
+
+{% if current_user.is_authenticated %}
+<a class="visually-hidden-focusable" href="#conteudo">Pular para o conteúdo</a>
+<header class="topbar navbar navbar-dark sticky-top px-3">
+  <button class="btn btn-outline-light d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral" aria-label="Abrir menu">
+    <i class="bi bi-list fs-4"></i>
+  </button>
+  <a class="navbar-brand fw-bold me-auto" href="{{ url_for('dashboard.index') }}"><i class="bi bi-box2-heart"></i> Estoque Fácil
+    <small class="fw-normal opacity-75 d-none d-sm-inline">· {{ nome_loja }}</small></a>
+  <div class="d-flex align-items-center gap-2 text-white">
+    <span class="d-none d-md-inline"><i class="bi bi-person-circle"></i> {{ current_user.nome }} <small class="opacity-75">({{ current_user.perfil_nome }})</small></span>
+    <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-light btn-sm" type="submit"><i class="bi bi-box-arrow-right"></i> Sair</button>
+    </form>
+  </div>
+</header>
+<div class="layout">
+  <nav class="sidebar d-none d-lg-flex flex-column" aria-label="Menu principal">{{ nav_links(menu) }}
+    <div class="mt-auto small text-muted px-3 pb-2">Versão {{ versao }}</div>
+  </nav>
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="menuLateral" aria-labelledby="menuLateralTitulo">
+    <div class="offcanvas-header"><h2 class="offcanvas-title h5" id="menuLateralTitulo">Menu</h2>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button></div>
+    <div class="offcanvas-body sidebar-mobile"><nav class="nav flex-column">{{ nav_links(menu) }}</nav></div>
+  </div>
+  <main id="conteudo" class="conteudo">
+    {% include "_flash.html" %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% else %}
+<main class="container py-4">{% include "_flash.html" %}{% block public %}{% endblock %}</main>
+{% endif %}
+<script src="{{ url_for('static', filename='vendor/bootstrap/js/popper.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

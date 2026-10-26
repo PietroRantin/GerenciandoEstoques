@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacao, vazio %}
+{% block title %}Números de série{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-upc"></i> Números de série</h1></div>
+<form class="card card-body mb-3" method="get"><div class="row g-2 align-items-end">
+  <div class="col-md-6"><label class="form-label" for="q">Buscar número de série ou produto</label><input class="form-control" type="search" id="q" name="q" value="{{ termo }}"></div>
+  <div class="col-md-3"><label class="form-label" for="status">Situação</label><select class="form-select" id="status" name="status"><option value="">Todas</option>
+    {% for k, v in status_opcoes.items() %}<option value="{{ k }}" {% if status == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div class="col-md-3 d-grid"><button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Buscar</button></div>
+</div></form>
+<div class="card"><div class="card-body p-0">
+  {% if pagina.items %}<div class="table-responsive"><table class="table table-hover mb-0">
+    <thead><tr><th>Número de série</th><th>Produto</th><th>Situação</th><th>Entrada</th><th>Saída</th></tr></thead><tbody>
+    {% for s in pagina.items %}<tr>
+      <td><a class="fw-semibold" href="{{ url_for('inventory.serie_detalhe', serie_id=s.id) }}">{{ s.numero }}</a></td><td>{{ s.produto.nome }}</td>
+      <td><span class="badge text-bg-{{ 'success' if s.status == 'em_estoque' else 'secondary' }}">{{ s.status_nome }}</span></td>
+      <td>{{ s.entrada.data_hora|datahora if s.entrada else '—' }}</td><td>{{ s.saida.data_hora|datahora if s.saida else '—' }}</td>
+    </tr>{% endfor %}</tbody></table></div>
+  {% else %}{{ vazio('Nenhum número de série encontrado.') }}{% endif %}
+</div></div>
+{{ paginacao(pagina, 'inventory.series') }}
+{% endblock %}

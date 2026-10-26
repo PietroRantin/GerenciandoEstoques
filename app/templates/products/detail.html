@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "_macros.html" import situacao, mov_badge, vazio %}
+{% block title %}{{ produto.nome }}{% endblock %}
+{% block content %}
+<div class="page-title">
+  <div><h1>{{ produto.nome }}</h1>
+    <div class="text-muted">Código/SKU <code>{{ produto.sku }}</code>{% if produto.codigo_barras %} · Código de barras {{ produto.codigo_barras }}{% endif %}
+      · {{ produto.categoria.nome if produto.categoria else 'Sem categoria' }}</div></div>
+  <div class="d-flex flex-wrap gap-2 no-print">
+    {% if produto.ativo %}
+    <a class="btn btn-primary" href="{{ url_for('inventory.entrada', produto=produto.id) }}"><i class="bi bi-box-arrow-in-down"></i> Registrar entrada</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('inventory.saida', produto=produto.id) }}"><i class="bi bi-box-arrow-up"></i> Registrar saída</a>
+    <a class="btn btn-success" href="{{ url_for('sales.nova', produto=produto.id) }}"><i class="bi bi-cart-plus"></i> Vender</a>
+    {% endif %}
+    {% if current_user.is_admin %}
+    <a class="btn btn-outline-secondary" href="{{ url_for('products.editar', produto_id=produto.id) }}"><i class="bi bi-pencil"></i> Editar</a>
+    {% if produto.ativo %}
+    <form method="post" action="{{ url_for('products.excluir', produto_id=produto.id) }}" data-confirmar="Tem certeza que deseja excluir &quot;{{ produto.nome }}&quot;? Se ele tiver histórico, será apenas desativado.">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Excluir</button></form>
+    {% endif %}{% endif %}
+  </div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md-3"><div class="card kpi"><div class="card-body"><div class="rotulo">Estoque atual</div>
+    <div class="valor">{{ produto.estoque_atual|qtd }} <small class="fs-6">{{ produto.unidade }}</small></div>{{ situacao(produto) }}</div></div></div>
+  <div class="col-6 col-md-3"><div class="card kpi kpi-warning"><div class="card-body"><div class="rotulo">Ponto de pedido</div>
+    <div class="valor">{{ produto.ponto_pedido|qtd }}</div><small class="text-muted">mín. {{ produto.estoque_minimo|qtd }} · máx. {{ produto.estoque_maximo|qtd }}</small></div></div></div>
+  <div class="col-6 col-md-3"><div class="card kpi kpi-success"><div class="card-body"><div class="rotulo">Preço de venda</div>
+    <div class="valor fs-4">{{ produto.preco_venda|brl }}</div><small class="text-muted">custo {{ produto.preco_custo|brl }}{% if produto.margem is not none %} · margem {{ produto.margem|pct }}{% endif %}</small></div></div></div>
+  <div class="col-6 col-md-3"><div class="card kpi kpi-info"><div class="card-body"><div class="rotulo">Valor em estoque</div>
+    <div class="valor fs-4">{{ produto.valor_estoque|brl }}</div>{% if produto.precisa_reposicao %}<small class="text-danger fw-semibold">Sugestão de compra: {{ produto.quantidade_sugerida|qtd }} {{ produto.unidade }}</small>{% endif %}</div></div></div>
+</div>
+{% if produto.descricao %}<p>{{ produto.descricao }}</p>{% endif %}
+<div class="row g-3">
+  {% if produto.usa_lote %}
+  <div class="col-lg-5"><div class="card h-100"><div class="card-header"><i class="bi bi-calendar-check"></i> Lotes em estoque</div><div class="card-body p-0">
+    {% if lotes %}<table class="table mb-0"><thead><tr><th>Lote</th><th>Validade</th><th class="num">Quantidade</th></tr></thead><tbody>
+      {% for l in lotes %}<tr><td><a href="{{ url_for('inventory.lote_detalhe', lote_id=l.id) }}">{{ l.numero }}</a></td><td>{{ l.validade|data }}</td><td class="num">{{ l.quantidade|qtd }}</td></tr>{% endfor %}
+    </tbody></table>{% else %}{{ vazio('Nenhum lote com saldo.') }}{% endif %}
+  </div></div></div>
+  {% endif %}
+  {% if produto.controla_serie %}
+  <div class="col-lg-5"><div class="card h-100"><div class="card-header"><i class="bi bi-upc"></i> Números de série em estoque ({{ series|length }})</div><div class="card-body">
+    {% for s in series %}<a class="badge text-bg-light border fs-6 me-1 mb-1 text-decoration-none" href="{{ url_for('inventory.serie_detalhe', serie_id=s.id) }}">{{ s.numero }}</a>{% else %}{{ vazio('Nenhuma unidade em estoque.') }}{% endfor %}
+  </div></div></div>
+  {% endif %}
+  <div class="{{ 'col-lg-7' if produto.usa_lote or produto.controla_serie else 'col-12' }}"><div class="card"><div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-clock-history"></i> Histórico de movimentações</span>
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('inventory.movimentacoes', produto=produto.id) }}">Ver tudo</a></div><div class="card-body p-0">
+    {% if movimentos %}<div class="table-responsive"><table class="table table-sm mb-0">
+      <thead><tr><th>Data/hora</th><th>Operação</th><th class="num">Qtd.</th><th class="num">Saldo</th><th>Lote/Série</th><th>Usuário</th></tr></thead><tbody>
+      {% for m in movimentos %}<tr><td>{{ m.data_hora|datahora }}</td><td>{{ mov_badge(m) }} <small>{{ m.tipo_nome }}</small></td>
+        <td class="num">{{ '+' if m.natureza == 'entrada' else '−' }}{{ m.quantidade|qtd }}</td><td class="num">{{ m.saldo_apos|qtd }}</td>
+        <td><small>{{ m.lote.numero if m.lote else (m.numero_serie or '—') }}</small></td><td><small>{{ m.usuario.nome }}</small></td></tr>{% endfor %}
+    </tbody></table></div>{% else %}{{ vazio('Nenhuma movimentação ainda. Registre a primeira entrada.') }}{% endif %}
+  </div></div></div>
+</div>
+<p class="small text-muted mt-3">Cadastrado em {{ produto.criado_em|datahora }} · Atualizado em {{ produto.atualizado_em|datahora }}</p>
+{% endblock %}

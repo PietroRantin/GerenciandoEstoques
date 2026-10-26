@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_macros.html" import vazio %}
+{% block title %}Curva ABC{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-bar-chart-steps"></i> Curva ABC</h1>{% include "reports/_acoes.html" %}</div>
+<p class="text-muted">Mostra quais produtos trazem mais dinheiro para a loja. <strong>Classe A</strong>: os mais importantes (somam até {{ r.limite_a|numero(0) }}% do faturamento) — nunca podem faltar.
+  <strong>Classe B</strong>: importância intermediária (até {{ r.limite_b|numero(0) }}%). <strong>Classe C</strong>: pouco impacto no faturamento — evite estoque parado.</p>
+<form class="card card-body mb-3 no-print" method="get"><div class="row g-2 align-items-end">
+  {% include "reports/_periodo.html" %}
+  <div class="col-md-2 d-grid"><button class="btn btn-primary" type="submit">Calcular</button></div>
+  {% if current_user.is_admin %}<div class="col-md-4 small text-muted">Limites configuráveis em <a href="{{ url_for('admin.configuracoes') }}">Configurações</a>.</div>{% endif %}
+</div></form>
+<div class="row g-3 mb-3">
+  {% for classe in 'ABC' %}{% set s = r.resumo[classe] %}
+  <div class="col-md-4"><div class="card kpi kpi-{{ s.cor if s.cor != 'secondary' else 'info' }}"><div class="card-body">
+    <div class="d-flex justify-content-between"><span class="badge fs-5 text-bg-{{ s.cor }}">Classe {{ classe }}</span><span class="text-muted">{{ s.produtos }} produto(s) · {{ s.percentual_produtos|pct }}</span></div>
+    <div class="valor fs-4 mt-2">{{ s.faturamento|brl }}</div><small class="text-muted">{{ s.percentual_faturamento|pct }} do faturamento</small>
+    <div class="barra-h mt-2"><div class="text-bg-{{ s.cor }}" style="width: {{ '%.1f'|format(s.percentual_faturamento) }}%"></div></div>
+  </div></div></div>{% endfor %}
+</div>
+<div class="card"><div class="card-header">Faturamento total do período: {{ r.total|brl }}</div><div class="card-body p-0">
+  {% if r.total > 0 %}<div class="table-responsive"><table class="table table-sm table-hover mb-0">
+    <thead><tr><th>#</th><th>Produto</th><th class="num">Qtd. vendida</th><th class="num">Faturamento</th><th class="num">Participação</th><th style="min-width:160px">Acumulado</th><th>Classe</th></tr></thead><tbody>
+    {% for l in r.linhas %}<tr><td>{{ l.posicao }}</td><td><a href="{{ url_for('products.detalhe', produto_id=l.produto.id) }}">{{ l.produto.nome }}</a></td>
+      <td class="num">{{ l.quantidade|qtd }}</td><td class="num">{{ l.faturamento|brl }}</td><td class="num">{{ l.participacao|pct }}</td>
+      <td><div class="d-flex align-items-center gap-2"><div class="barra-h flex-grow-1"><div class="text-bg-{{ l.cor }}" style="width: {{ '%.1f'|format(l.acumulado) }}%"></div></div><small class="num">{{ l.acumulado|pct }}</small></div></td>
+      <td><span class="badge text-bg-{{ l.cor }} fs-6">{{ l.classe }}</span></td></tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}{{ vazio('Não há vendas no período escolhido para calcular a Curva ABC.', 'bar-chart-steps') }}{% endif %}
+</div></div>
+{% endblock %}

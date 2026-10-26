@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import vazio %}
+{% block title %}Produtos próximos do vencimento{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-calendar-event"></i> Produtos próximos do vencimento</h1></div>
+<form class="card card-body mb-3" method="get"><div class="row g-2 align-items-end">
+  <div class="col-6 col-md-3"><label class="form-label" for="dias">Vencem em até (dias)</label><input class="form-control" type="number" min="1" max="365" id="dias" name="dias" value="{{ janela }}"></div>
+  <div class="col-6 col-md-3"><label class="form-label" for="ordenar">Ordenar por</label><select class="form-select" id="ordenar" name="ordenar">
+    {% for k, v in [('validade', 'Data de validade'), ('produto', 'Produto'), ('quantidade', 'Quantidade'), ('lote', 'Lote')] %}
+    <option value="{{ k }}" {% if ordenar == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div class="col-md-3 d-grid"><button class="btn btn-primary" type="submit"><i class="bi bi-funnel"></i> Atualizar</button></div>
+</div></form>
+<div class="card"><div class="card-body p-0">
+  {% if lotes %}<div class="table-responsive"><table class="table table-hover mb-0">
+    <thead><tr>
+      {% for k, v in [('produto', 'Produto'), ('lote', 'Lote'), ('validade', 'Validade')] %}<th><a class="text-reset" href="{{ url_for('alerts.validade', ordenar=k, dias=janela) }}">{{ v }}{% if ordenar == k %} ▲{% endif %}</a></th>{% endfor %}
+      <th>Dias</th><th class="num"><a class="text-reset" href="{{ url_for('alerts.validade', ordenar='quantidade', dias=janela) }}">Quantidade{% if ordenar == 'quantidade' %} ▼{% endif %}</a></th><th>Situação</th><th class="no-print">O que fazer</th></tr></thead><tbody>
+    {% for l in lotes %}{% set s = status_validade(l.validade) %}{% set d = (l.validade - hoje).days %}<tr class="{{ 'table-danger' if s == 'vencido' else ('table-warning' if s == 'critico' else '') }}">
+      <td><a href="{{ url_for('products.detalhe', produto_id=l.product_id) }}">{{ l.produto.nome }}</a></td>
+      <td><a href="{{ url_for('inventory.lote_detalhe', lote_id=l.id) }}">{{ l.numero }}</a></td><td>{{ l.validade|data }}</td>
+      <td>{% if d < 0 %}venceu há {{ -d }}{% elif d == 0 %}hoje{% else %}{{ d }}{% endif %}</td>
+      <td class="num">{{ l.quantidade|qtd }} {{ l.produto.unidade }}</td>
+      <td><span class="badge text-bg-{{ info[s][1] }}">{{ info[s][0] }}</span></td>
+      <td class="no-print">{% if s == 'vencido' %}<a class="btn btn-sm btn-danger" href="{{ url_for('inventory.saida', produto=l.product_id, lote=l.id) }}">Dar baixa (perda)</a>
+        {% else %}<small class="text-muted">Venda primeiro / faça promoção</small>{% endif %}</td>
+    </tr>{% endfor %}</tbody></table></div>
+  {% else %}{{ vazio('Nenhum produto vence nos próximos ' ~ janela ~ ' dias.', 'calendar-check') }}{% endif %}
+</div></div>
+<p class="small text-muted mt-2">Níveis: <span class="badge text-bg-danger">Vencido</span> <span class="badge text-bg-warning">vence em até {{ critico }} dias</span> <span class="badge text-bg-info">vence dentro da janela de alerta</span>. Os prazos podem ser alterados em Configurações.</p>
+{% endblock %}

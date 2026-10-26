@@ -1,0 +1,20 @@
+<form class="card card-body mb-3" method="get">
+  <div class="row g-2 align-items-end">
+    <div class="col-6 col-md-2"><label class="form-label" for="inicio">De</label><input class="form-control" type="date" id="inicio" name="inicio" value="{{ filtros.inicio.isoformat() if filtros.inicio else '' }}"></div>
+    <div class="col-6 col-md-2"><label class="form-label" for="fim">Até</label><input class="form-control" type="date" id="fim" name="fim" value="{{ filtros.fim.isoformat() if filtros.fim else '' }}"></div>
+    <div class="col-md-3"><label class="form-label" for="produto">Produto</label>
+      <select class="form-select" id="produto" name="produto"><option value="">Todos</option>
+        {% for p in produtos %}<option value="{{ p.id }}" {% if filtros.product_id == p.id %}selected{% endif %}>{{ p.nome }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><label class="form-label" for="natureza">Operação</label>
+      <select class="form-select" id="natureza" name="natureza">{% for v, r in [('', 'Todas'), ('entrada', 'Entradas'), ('saida', 'Saídas')] %}
+        <option value="{{ v }}" {% if (filtros.natureza or '') == v %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-3"><label class="form-label" for="tipo">Tipo</label>
+      <select class="form-select" id="tipo" name="tipo"><option value="">Todos</option>
+        {% for k, v in tipos.items() %}<option value="{{ k }}" {% if filtros.tipo == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+    <div class="col-md-3"><label class="form-label" for="usuario">Usuário</label>
+      <select class="form-select" id="usuario" name="usuario"><option value="">Todos</option>
+        {% for u in usuarios %}<option value="{{ u.id }}" {% if filtros.usuario_id == u.id %}selected{% endif %}>{{ u.nome }}</option>{% endfor %}</select></div>
+    <div class="col-md-2 d-grid"><button class="btn btn-primary" type="submit"><i class="bi bi-funnel"></i> Filtrar</button></div>
+    {% if exportar is defined and exportar %}<div class="col-md-2 d-grid"><a class="btn btn-outline-secondary" href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), formato='csv')) }}"><i class="bi bi-filetype-csv"></i> Exportar CSV</a></div>{% endif %}
+  </div>
+</form>

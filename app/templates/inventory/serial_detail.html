@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Série {{ serie.numero }}{% endblock %}
+{% block content %}
+<div class="page-title"><div><h1><i class="bi bi-upc"></i> Nº de série {{ serie.numero }}</h1>
+  <div class="text-muted"><a href="{{ url_for('products.detalhe', produto_id=serie.product_id) }}">{{ serie.produto.nome }}</a></div></div>
+  <span class="badge fs-6 text-bg-{{ 'success' if serie.status == 'em_estoque' else 'secondary' }}">{{ serie.status_nome }}</span></div>
+<div class="card"><div class="card-header">Rastreamento</div><div class="card-body p-0"><table class="table mb-0">
+  <thead><tr><th>Evento</th><th>Data/hora</th><th>Tipo</th><th>Usuário</th><th>Referência</th></tr></thead><tbody>
+  {% for rotulo, m in [('Entrada', serie.entrada), ('Saída', serie.saida)] %}{% if m %}<tr>
+    <td><span class="badge text-bg-{{ 'success' if rotulo == 'Entrada' else 'danger' }}">{{ rotulo }}</span></td><td>{{ m.data_hora|datahora }}</td>
+    <td>{{ m.tipo_nome }}</td><td>{{ m.usuario.nome }}</td>
+    <td>{% if m.sale_id %}<a href="{{ url_for('sales.detalhe', venda_id=m.sale_id) }}">Venda nº {{ m.sale_id }}</a>{% else %}{{ m.observacao or '' }}{% endif %}</td></tr>{% endif %}{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

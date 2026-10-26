@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacao, vazio %}
+{% block title %}Vendas{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-cart3"></i> Vendas</h1>
+  <a class="btn btn-success btn-lg" href="{{ url_for('sales.nova') }}"><i class="bi bi-cart-plus"></i> Nova venda</a></div>
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md-3"><div class="card kpi kpi-success"><div class="card-body"><div class="rotulo">Faturamento (30 dias)</div><div class="valor fs-4">{{ resumo.faturamento|brl }}</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card kpi"><div class="card-body"><div class="rotulo">Vendas (30 dias)</div><div class="valor">{{ resumo.numero_vendas }}</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card kpi kpi-info"><div class="card-body"><div class="rotulo">Ticket médio</div><div class="valor fs-4">{{ resumo.ticket_medio|brl }}</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card kpi kpi-warning"><div class="card-body"><div class="rotulo">Itens vendidos</div><div class="valor">{{ resumo.itens_vendidos|qtd }}</div></div></div></div>
+</div>
+<form class="card card-body mb-3" method="get"><div class="row g-2 align-items-end">
+  <div class="col-6 col-md-3"><label class="form-label" for="inicio">De</label><input class="form-control" type="date" id="inicio" name="inicio" value="{{ args.get('inicio', '') }}"></div>
+  <div class="col-6 col-md-3"><label class="form-label" for="fim">Até</label><input class="form-control" type="date" id="fim" name="fim" value="{{ args.get('fim', '') }}"></div>
+  <div class="col-md-3 d-grid"><button class="btn btn-primary" type="submit"><i class="bi bi-funnel"></i> Filtrar</button></div>
+</div></form>
+<div class="card"><div class="card-body p-0">
+  {% if pagina.items %}<div class="table-responsive"><table class="table table-hover mb-0">
+    <thead><tr><th>Nº</th><th>Data/hora</th><th>Pagamento</th><th>Vendedor</th><th class="num">Valor</th><th></th></tr></thead><tbody>
+    {% for v in pagina.items %}<tr><td>{{ v.id }}</td><td>{{ v.data_hora|datahora }}</td><td>{{ v.forma_pagamento_nome }}</td><td>{{ v.usuario.nome }}</td>
+      <td class="num fw-bold">{{ v.valor_total|brl }}</td><td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('sales.detalhe', venda_id=v.id) }}">Ver itens</a></td></tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}{{ vazio('Nenhuma venda encontrada.', 'cart') }}{% endif %}
+</div></div>
+{{ paginacao(pagina, 'sales.listar') }}
+{% endblock %}

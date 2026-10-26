@@ -1,0 +1,55 @@
+{% macro campo(nome, rotulo, dados, erros, tipo='text', ajuda='', obrigatorio=False, attrs='', valor=None, classe='', input_classe='') %}
+{% set v = dados.get(nome, valor if valor is not none else '') %}
+<div class="mb-3 {{ classe }}">
+  <label class="form-label" for="{{ nome }}">{{ rotulo }}{% if obrigatorio %} <span class="text-danger" title="obrigatório">*</span>{% endif %}</label>
+  <input type="{{ tipo }}" class="form-control {{ input_classe }} {% if erros.get(nome) %}is-invalid{% endif %}" id="{{ nome }}" name="{{ nome }}"
+         value="{{ v if v is not none else '' }}" {% if obrigatorio %}required{% endif %} {{ attrs|safe }}
+         {% if ajuda %}aria-describedby="{{ nome }}_ajuda"{% endif %}>
+  {% if erros.get(nome) %}<div class="invalid-feedback">{{ erros[nome] }}</div>{% endif %}
+  {% if ajuda %}<div class="form-text" id="{{ nome }}_ajuda">{{ ajuda }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro paginacao(pagina, endpoint) %}
+{% if pagina.pages > 1 %}
+<nav aria-label="Paginação" class="mt-3">
+  <ul class="pagination flex-wrap">
+    {% set args = request.args.to_dict() %}
+    <li class="page-item {% if not pagina.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for(endpoint, **dict(args, page=pagina.prev_num or 1)) }}">« Anterior</a></li>
+    {% for p in pagina.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if p %}<li class="page-item {% if p == pagina.page %}active{% endif %}"><a class="page-link" href="{{ url_for(endpoint, **dict(args, page=p)) }}">{{ p }}</a></li>
+      {% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagina.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for(endpoint, **dict(args, page=pagina.next_num or pagina.page)) }}">Próxima »</a></li>
+  </ul>
+  <p class="small text-muted">{{ pagina.total }} registro(s) · página {{ pagina.page }} de {{ pagina.pages }}</p>
+</nav>
+{% elif pagina.total %}<p class="small text-muted mt-2">{{ pagina.total }} registro(s)</p>
+{% endif %}
+{% endmacro %}
+
+{% macro situacao(produto) %}{% set s = produto.situacao %}<span class="badge text-bg-{{ s[1] }}">{{ s[0] }}</span>{% endmacro %}
+
+{% macro mov_badge(m) %}
+{% if m.natureza == 'entrada' %}<span class="badge text-bg-success"><i class="bi bi-arrow-down"></i> Entrada</span>
+{% else %}<span class="badge text-bg-danger"><i class="bi bi-arrow-up"></i> Saída</span>{% endif %}
+{% endmacro %}
+
+{% macro seletor_produto(produtos, selecionado, nome='produto_id', rotulo='Produto', erros={}) %}
+<div class="mb-3 seletor-produto">
+  <label class="form-label" for="{{ nome }}">{{ rotulo }} <span class="text-danger">*</span></label>
+  <input type="search" class="form-control mb-2 filtro-produto" placeholder="Digite o nome ou passe o leitor de código de barras" aria-label="Buscar produto" autocomplete="off">
+  <select class="form-select select-produto" id="{{ nome }}" name="{{ nome }}" required size="1">
+    <option value="">— Selecione o produto —</option>
+    {% for p in produtos %}
+    <option value="{{ p.id }}" data-codigos="{{ p.sku|lower }} {{ (p.codigo_barras or '')|lower }}" {% if selecionado|string == p.id|string %}selected{% endif %}>{{ p.nome }} · {{ p.sku }} (estoque: {{ p.estoque_atual|qtd }} {{ p.unidade }})</option>
+    {% endfor %}
+  </select>
+</div>
+{% endmacro %}
+
+{% macro vazio(texto, icone='inbox') %}
+<div class="text-center text-muted py-4"><i class="bi bi-{{ icone }} fs-1 d-block mb-2" aria-hidden="true"></i>{{ texto }}</div>
+{% endmacro %}

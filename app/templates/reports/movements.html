@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacao %}
+{% block title %}Relatório de movimentações{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-clock-history"></i> Relatório de movimentações</h1>{% include "reports/_acoes.html" %}</div>
+{% set exportar = False %}{% include "_filtro_mov.html" %}
+{% include "_tabela_mov.html" %}
+{{ paginacao(pagina, 'reports.movimentacoes') }}
+{% endblock %}

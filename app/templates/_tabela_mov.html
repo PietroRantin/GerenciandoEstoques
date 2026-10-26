@@ -1,0 +1,18 @@
+{% from "_macros.html" import mov_badge, vazio %}
+<div class="card"><div class="card-body p-0">
+  {% if pagina.items %}
+  <div class="table-responsive"><table class="table table-sm table-hover mb-0">
+    <thead><tr><th>Data/hora</th><th>Operação</th><th>Produto</th><th class="num">Quantidade</th><th class="num">Saldo após</th><th>Lote / Série</th><th>Usuário</th><th>Observação</th></tr></thead>
+    <tbody>{% for m in pagina.items %}<tr>
+      <td class="text-nowrap">{{ m.data_hora|datahora }}</td>
+      <td>{{ mov_badge(m) }}<br><small>{{ m.tipo_nome }}</small></td>
+      <td><a href="{{ url_for('products.detalhe', produto_id=m.product_id) }}">{{ m.produto.nome }}</a></td>
+      <td class="num fw-bold {{ 'text-success' if m.natureza == 'entrada' else 'text-danger' }}">{{ '+' if m.natureza == 'entrada' else '−' }}{{ m.quantidade|qtd }}</td>
+      <td class="num">{{ m.saldo_apos|qtd }}</td>
+      <td><small>{% if m.lote %}<a href="{{ url_for('inventory.lote_detalhe', lote_id=m.lote_id) }}">{{ m.lote.numero }}</a>{% if m.validade %} ({{ m.validade|data }}){% endif %}{% endif %}{{ m.numero_serie or '' }}</small></td>
+      <td><small>{{ m.usuario.nome }}</small></td>
+      <td><small>{% if m.sale_id %}<a href="{{ url_for('sales.detalhe', venda_id=m.sale_id) }}">Venda nº {{ m.sale_id }}</a>{% else %}{{ m.observacao or '' }}{% endif %}</small></td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}{{ vazio('Nenhuma movimentação encontrada com estes filtros.') }}{% endif %}
+</div></div>

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import seletor_produto %}
+{% block title %}Registrar saída{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-box-arrow-up text-danger"></i> Registrar saída</h1>
+  <a class="btn btn-success" href="{{ url_for('sales.nova') }}"><i class="bi bi-cart-plus"></i> É uma venda? Use "Nova venda"</a></div>
+<p class="text-muted">Use para perdas, produtos vencidos, consumo da loja, devolução ao fornecedor ou ajuste após contagem.</p>
+<form method="post" class="card" id="form-movimento" data-modo="saida" data-api="{{ url_for('products.api_produto', produto_id=0) }}" data-lote="{{ dados.get('lote_id', '') }}" novalidate>
+  <div class="card-body">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+    <div class="col-lg-7">
+      {{ seletor_produto(produtos, dados.get('produto_id', '')) }}
+      <div id="info-produto" class="info-produto mb-3" hidden></div>
+      <div class="row">
+        <div class="col-sm-6 mb-3"><label class="form-label" for="tipo">Motivo da saída <span class="text-danger">*</span></label>
+          <select class="form-select" id="tipo" name="tipo" required>
+            {% for k, v in tipos.items() %}<option value="{{ k }}" {% if dados.get('tipo', 'perda') == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+        <div class="col-sm-6 mb-3"><label class="form-label" for="quantidade">Quantidade <span class="text-danger">*</span></label>
+          <input class="form-control form-control-lg quantidade" id="quantidade" name="quantidade" inputmode="decimal" required value="{{ dados.get('quantidade', '') }}" placeholder="Ex.: 2">
+          <div class="form-text" id="aviso-qtd"></div></div>
+      </div>
+      <div class="mb-3 campo-lote" hidden><label class="form-label" for="lote_id">Lote</label>
+        <select class="form-select" id="lote_id" name="lote_id"><option value="">Automático (vence primeiro, sai primeiro)</option></select>
+        <div class="form-text">Deixe "Automático" para o sistema baixar primeiro os lotes que vencem antes.</div></div>
+      <div class="mb-3 campo-serie" hidden><label class="form-label">Números de série que estão saindo <span class="text-danger">*</span></label>
+        <div id="lista-series" class="d-flex flex-wrap gap-2"></div>
+        <input type="hidden" id="numeros_serie" name="numeros_serie" value="{{ dados.get('numeros_serie', '') }}"></div>
+    </div>
+    <div class="col-lg-5">
+      <div class="mb-3"><label class="form-label" for="observacao">Observação</label>
+        <textarea class="form-control" id="observacao" name="observacao" rows="4" maxlength="255" placeholder="Ex.: embalagem rasgada">{{ dados.get('observacao', '') }}</textarea></div>
+    </div>
+  </div>
+  </div>
+  <div class="card-footer bg-white d-flex flex-wrap gap-2 justify-content-end">
+    <button class="btn btn-outline-primary btn-lg" type="submit" name="continuar" value="1"><i class="bi bi-plus-circle"></i> Registrar e lançar outra</button>
+    <button class="btn btn-danger btn-lg" type="submit"><i class="bi bi-check-lg"></i> Registrar saída</button>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/movimento.js') }}"></script>{% endblock %}

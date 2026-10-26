@@ -1,0 +1,58 @@
+{
+  "executado_em": "18/10/2026 22:13",
+  "cenarios": [
+    {
+      "id": 1,
+      "nome": "Ruptura de estoque (mercearia)",
+      "requisitos": "RF-004, RF-003",
+      "entrada": "Venda de 15 unidades de Leite integral UHT 1L",
+      "saldo_antes": 8.0,
+      "saldo_depois": 8.0,
+      "mensagem": "Estoque insuficiente. Não é possível realizar esta saída. Disponível de \"Leite integral UHT 1L\": 8 un; solicitado: 15 un. Nenhum item foi baixado do estoque.",
+      "aprovado": true,
+      "captura": "validacao/c1_ruptura_leite.png"
+    },
+    {
+      "id": 2,
+      "nome": "Ponto de pedido (padaria)",
+      "requisitos": "RF-005, RF-006",
+      "entrada": "Consumo de 4 pacotes de Farinha de trigo 1kg (saldo 14, ponto de pedido 10)",
+      "saldo_antes": 14.0,
+      "saldo_depois": 10.0,
+      "mensagem": "\"Farinha de trigo 1kg\" atingiu o ponto de pedido. Ele foi adicionado à lista de reposição.",
+      "aprovado": true,
+      "captura": [
+        "validacao/c2_ponto_pedido_aviso.png",
+        "validacao/c2_ponto_pedido_alertas.png"
+      ]
+    },
+    {
+      "id": 3,
+      "nome": "Pico de movimentações (conveniência)",
+      "requisitos": "RNF-001, RNF-003, RNF-005",
+      "entrada": "300 vendas e 600 consultas de saldo em sequência",
+      "duracao_s": 7.8,
+      "vendas_registradas": 300,
+      "vendas_recusadas": [],
+      "operacoes_por_hora_equivalente": 415674,
+      "consulta_media_ms": 6.1,
+      "consulta_p95_ms": 7.5,
+      "consulta_max_ms": 60.4,
+      "venda_media_ms": 13.8,
+      "venda_max_ms": 31.0,
+      "movimentacoes_no_pico": 302,
+      "movimentacoes_com_operador_data_hora": 302,
+      "aprovado": true,
+      "captura": "validacao/c3_auditoria_operador.png"
+    },
+    {
+      "id": 4,
+      "nome": "Validade de lote (mercearia)",
+      "requisitos": "RF-007",
+      "entrada": "Lote LAT-2610 de Iogurte natural 170g vencendo em 20 dias (janela de 30 dias)",
+      "mensagem": "Lote LAT-2610 listado",
+      "aprovado": true,
+      "captura": "validacao/c4_validade_laticinios.png"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacao, situacao, vazio %}
+{% block title %}Estoque{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-clipboard-data"></i> Estoque</h1>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-primary" href="{{ url_for('inventory.lotes') }}"><i class="bi bi-calendar-check"></i> Lotes</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('inventory.series') }}"><i class="bi bi-upc"></i> Números de série</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('inventory.movimentacoes') }}"><i class="bi bi-clock-history"></i> Histórico</a>
+  </div></div>
+<form class="card card-body mb-3" method="get" role="search">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-5"><label class="form-label" for="q">Consultar saldo</label>
+      <input class="form-control form-control-lg" type="search" id="q" name="q" value="{{ termo }}" placeholder="Nome, código/SKU ou código de barras" autofocus></div>
+    <div class="col-6 col-md-3"><label class="form-label" for="categoria">Categoria</label>
+      <select class="form-select" id="categoria" name="categoria"><option value="">Todas</option>
+        {% for c in categorias %}<option value="{{ c.id }}" {% if categoria_id == c.id %}selected{% endif %}>{{ c.nome }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><label class="form-label" for="situacao">Situação</label>
+      <select class="form-select" id="situacao" name="situacao">
+        {% for v, r in [('', 'Todas'), ('repor', 'Precisa repor'), ('sem_estoque', 'Sem estoque'), ('normal', 'Normal')] %}
+        <option value="{{ v }}" {% if situacao == v %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></div>
+    <div class="col-md-2 d-grid"><button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-search"></i> Consultar</button></div>
+  </div>
+</form>
+<div class="card"><div class="card-body p-0">
+  {% if pagina.items %}
+  <div class="table-responsive"><table class="table table-hover mb-0">
+    <thead><tr><th>Produto</th><th>Código/SKU</th><th class="num">Estoque atual</th><th class="num">Mínimo</th><th class="num">Ponto de pedido</th><th class="num">Máximo</th><th>Situação</th><th class="no-print">Ações</th></tr></thead>
+    <tbody>{% for p in pagina.items %}<tr>
+      <td><a class="fw-semibold" href="{{ url_for('products.detalhe', produto_id=p.id) }}">{{ p.nome }}</a></td>
+      <td><code>{{ p.sku }}</code></td>
+      <td class="num fs-5 fw-bold">{{ p.estoque_atual|qtd }} <small class="fw-normal">{{ p.unidade }}</small></td>
+      <td class="num">{{ p.estoque_minimo|qtd }}</td><td class="num">{{ p.ponto_pedido|qtd }}</td><td class="num">{{ p.estoque_maximo|qtd }}</td>
+      <td>{{ situacao(p) }}</td>
+      <td class="text-nowrap no-print">
+        <a class="btn btn-sm btn-outline-success" href="{{ url_for('inventory.entrada', produto=p.id) }}" title="Registrar entrada"><i class="bi bi-plus-lg"></i><span class="visually-hidden">Entrada de {{ p.nome }}</span></a>
+        <a class="btn btn-sm btn-outline-danger" href="{{ url_for('inventory.saida', produto=p.id) }}" title="Registrar saída"><i class="bi bi-dash-lg"></i><span class="visually-hidden">Saída de {{ p.nome }}</span></a>
+      </td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}{{ vazio('Nenhum produto encontrado.', 'search') }}{% endif %}
+</div></div>
+{{ paginacao(pagina, 'inventory.estoque') }}
+{% endblock %}

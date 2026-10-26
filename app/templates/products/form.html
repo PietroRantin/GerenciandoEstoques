@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% from "_macros.html" import campo %}
+{% set editando = produto is not none %}
+{% block title %}{{ 'Editar' if editando else 'Cadastrar' }} produto{% endblock %}
+{% block content %}
+{% set d = dados if dados else {} %}
+{% macro val(nome, padrao='') %}{{ d.get(nome) if nome in d else ((produto[nome] if produto[nome] is not none else '') if editando else padrao) }}{% endmacro %}
+{% macro num(nome) %}{% if nome in d %}{{ d.get(nome) }}{% elif editando %}{{ produto[nome]|qtd }}{% endif %}{% endmacro %}
+{% macro din(nome) %}{% if nome in d %}{{ d.get(nome) }}{% elif editando %}{{ produto[nome]|numero }}{% endif %}{% endmacro %}
+{% macro marcado(nome) %}{% if d %}{{ 'checked' if d.get(nome) }}{% elif editando and produto[nome] %}checked{% endif %}{% endmacro %}
+<div class="page-title">
+  <h1>{% if editando %}<i class="bi bi-pencil-square"></i> Editar: {{ produto.nome }}{% else %}<i class="bi bi-plus-square"></i> Cadastrar produto{% endif %}</h1>
+  <a class="btn btn-outline-secondary" href="{{ url_for('products.detalhe', produto_id=produto.id) if editando else url_for('products.listar') }}"><i class="bi bi-arrow-left"></i> Voltar</a>
+</div>
+<form method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+    <div class="col-lg-7">
+      <div class="card mb-3"><div class="card-header">1. Identificação</div><div class="card-body">
+        {{ campo('nome', 'Nome do produto', d, erros, obrigatorio=True, valor=val('nome'), attrs='maxlength="120" autofocus placeholder="Ex.: Arroz branco tipo 1 5kg"') }}
+        <div class="row">
+          {{ campo('sku', 'Código/SKU', d, erros, obrigatorio=True, valor=val('sku'), classe='col-sm-6', ajuda='Código interno curto. Ex.: ARROZ-5KG', attrs='maxlength="50"') }}
+          {{ campo('codigo_barras', 'Código de barras', d, erros, valor=val('codigo_barras'), classe='col-sm-6', ajuda='Opcional. Use o leitor ou digite os números.', attrs='maxlength="50" inputmode="numeric"') }}
+        </div>
+        <div class="row">
+          <div class="col-sm-6 mb-3"><label class="form-label" for="categoria_id">Categoria</label>
+            <select class="form-select {% if erros.categoria_id %}is-invalid{% endif %}" id="categoria_id" name="categoria_id">
+              <option value="">Sem categoria</option>
+              {% set cat_sel = d.get('categoria_id') if 'categoria_id' in d else (produto.categoria_id if editando else '') %}
+              {% for c in categorias %}<option value="{{ c.id }}" {% if cat_sel|string == c.id|string %}selected{% endif %}>{{ c.nome }}</option>{% endfor %}
+            </select>{% if erros.categoria_id %}<div class="invalid-feedback">{{ erros.categoria_id }}</div>{% endif %}</div>
+          <div class="col-sm-6 mb-3"><label class="form-label" for="unidade">Unidade de medida <span class="text-danger">*</span></label>
+            {% set un_sel = d.get('unidade') if 'unidade' in d else (produto.unidade if editando else 'un') %}
+            <select class="form-select {% if erros.unidade %}is-invalid{% endif %}" id="unidade" name="unidade">
+              {% for k, v in unidades.items() %}<option value="{{ k }}" {% if un_sel == k %}selected{% endif %}>{{ v }}</option>{% endfor %}
+            </select>{% if erros.unidade %}<div class="invalid-feedback">{{ erros.unidade }}</div>{% endif %}</div>
+        </div>
+        <div class="mb-1"><label class="form-label" for="descricao">Descrição</label>
+          <textarea class="form-control" id="descricao" name="descricao" rows="2" placeholder="Opcional: marca, sabor, tamanho...">{{ val('descricao') }}</textarea></div>
+      </div></div>
+      <div class="card mb-3"><div class="card-header">2. Preços</div><div class="card-body"><div class="row">
+        {{ campo('preco_custo', 'Preço de custo (R$)', d, erros, valor=din('preco_custo'), classe='col-sm-6', ajuda='Quanto você paga ao fornecedor.', attrs='inputmode="decimal" placeholder="0,00"', input_classe='dinheiro') }}
+        {{ campo('preco_venda', 'Preço de venda (R$)', d, erros, obrigatorio=True, valor=din('preco_venda'), classe='col-sm-6', attrs='inputmode="decimal" placeholder="0,00"', input_classe='dinheiro') }}
+      </div></div></div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card mb-3"><div class="card-header">3. Níveis de estoque</div><div class="card-body">
+        <p class="small text-muted">Quando o estoque chegar ao <strong>ponto de pedido</strong>, o sistema avisa que é hora de comprar.</p>
+        {{ campo('estoque_minimo', 'Estoque mínimo', d, erros, valor=num('estoque_minimo'), ajuda='Quantidade de segurança, nunca deveria faltar.', attrs='inputmode="decimal"', input_classe='quantidade') }}
+        {{ campo('ponto_pedido', 'Ponto de pedido', d, erros, valor=num('ponto_pedido'), ajuda='Ao chegar nesta quantidade, aparece o alerta de reposição. Se vazio, usa o mínimo.', attrs='inputmode="decimal"', input_classe='quantidade') }}
+        {{ campo('estoque_maximo', 'Estoque máximo', d, erros, valor=num('estoque_maximo'), ajuda='Usado para sugerir quanto comprar (máximo − atual).', attrs='inputmode="decimal"', input_classe='quantidade') }}
+        {% if editando %}<div class="info-produto small">Estoque atual: <strong>{{ produto.estoque_atual|qtd }} {{ produto.unidade }}</strong>. O estoque só muda por <a href="{{ url_for('inventory.entrada', produto=produto.id) }}">entradas</a>, <a href="{{ url_for('inventory.saida', produto=produto.id) }}">saídas</a> ou vendas — assim tudo fica registrado.</div>{% endif %}
+      </div></div>
+      <div class="card mb-3"><div class="card-header">4. Rastreabilidade (opcional)</div><div class="card-body">
+        {% for nome, rotulo, ajuda in [('controla_validade', 'Controlar validade', 'Pede a data de validade em cada entrada e avisa antes de vencer. Ideal para alimentos.'),
+                                       ('controla_lote', 'Controlar lote', 'Pede o número do lote impresso na embalagem.'),
+                                       ('controla_serie', 'Controlar número de série', 'Cada unidade tem um número único (ex.: eletrônicos).')] %}
+        <div class="form-check form-switch mb-2">
+          <input class="form-check-input {% if erros.get(nome) %}is-invalid{% endif %}" type="checkbox" role="switch" id="{{ nome }}" name="{{ nome }}" {{ marcado(nome) }}>
+          <label class="form-check-label fw-semibold" for="{{ nome }}">{{ rotulo }}</label>
+          <div class="form-text">{{ ajuda }}</div>
+          {% if erros.get(nome) %}<div class="invalid-feedback">{{ erros[nome] }}</div>{% endif %}
+        </div>{% endfor %}
+        {% if editando %}
+        <hr><div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="ativo" name="ativo" {% if (d and d.get('ativo')) or (not d and produto.ativo) %}checked{% endif %}>
+          <label class="form-check-label fw-semibold" for="ativo">Produto ativo</label>
+          <div class="form-text">Produtos inativos não aparecem nas telas de entrada, saída e venda.</div></div>
+        {% endif %}
+      </div></div>
+    </div>
+  </div>
+  <div class="d-flex gap-2 justify-content-end mb-4">
+    <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('products.listar') }}">Cancelar</a>
+    <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-check-lg"></i> {{ 'Salvar alterações' if editando else 'Cadastrar produto' }}</button>
+  </div>
+</form>
+{% endblock %}

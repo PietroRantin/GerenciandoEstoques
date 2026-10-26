@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacao, vazio %}
+{% block title %}Lotes{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-calendar-check"></i> Lotes</h1>
+  <a class="btn btn-outline-warning" href="{{ url_for('alerts.validade') }}"><i class="bi bi-calendar-event"></i> Próximos do vencimento</a></div>
+<form class="card card-body mb-3" method="get"><div class="row g-2 align-items-end">
+  <div class="col-md-6"><label class="form-label" for="q">Buscar lote ou produto</label><input class="form-control" type="search" id="q" name="q" value="{{ termo }}"></div>
+  <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="checkbox" id="todos" name="todos" value="1" {% if todos %}checked{% endif %}>
+    <label class="form-check-label" for="todos">Incluir lotes zerados</label></div></div>
+  <div class="col-md-3 d-grid"><button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Buscar</button></div>
+</div></form>
+<div class="card"><div class="card-body p-0">
+  {% if pagina.items %}<div class="table-responsive"><table class="table table-hover mb-0">
+    <thead><tr><th>Lote</th><th>Produto</th><th>Validade</th><th class="num">Quantidade</th><th>Situação</th></tr></thead><tbody>
+    {% for l in pagina.items %}{% set s = info[status_validade(l.validade) if l.quantidade > 0 else none] %}<tr>
+      <td><a class="fw-semibold" href="{{ url_for('inventory.lote_detalhe', lote_id=l.id) }}">{{ l.numero }}</a></td>
+      <td>{{ l.produto.nome }}</td><td>{{ l.validade|data }}</td><td class="num">{{ l.quantidade|qtd }} {{ l.produto.unidade }}</td>
+      <td>{% if l.quantidade > 0 %}<span class="badge text-bg-{{ s[1] }}">{{ s[0] }}</span>{% else %}<span class="badge text-bg-secondary">Zerado</span>{% endif %}</td>
+    </tr>{% endfor %}</tbody></table></div>
+  {% else %}{{ vazio('Nenhum lote encontrado.') }}{% endif %}
+</div></div>
+{{ paginacao(pagina, 'inventory.lotes') }}
+{% endblock %}

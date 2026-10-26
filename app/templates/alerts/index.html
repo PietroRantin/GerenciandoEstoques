@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import situacao, vazio %}
+{% block title %}Alertas{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-bell"></i> Alertas</h1>
+  <a class="btn btn-outline-warning" href="{{ url_for('alerts.validade') }}"><i class="bi bi-calendar-event"></i> Produtos próximos do vencimento</a></div>
+<p class="text-muted">Os alertas são criados e encerrados automaticamente: quando você registra uma entrada que resolve o problema, o alerta sai desta lista.</p>
+<div class="card mb-3"><div class="card-header">Alertas ativos ({{ alertas|length }})</div><div class="card-body">
+  {% for a in alertas %}{% set n = a.nivel_info %}
+  <div class="alerta-linha {{ a.nivel }} flex-wrap">
+    <span class="badge text-bg-{{ n[1] }}">{{ n[0] }}</span>
+    <span class="flex-grow-1">{{ a.mensagem }}</span>
+    <small class="opacity-75">desde {{ a.criado_em|datahora }}</small>
+    {% if a.tipo in ('sem_estoque', 'estoque_baixo') %}<a class="btn btn-sm btn-primary" href="{{ url_for('inventory.entrada', produto=a.product_id) }}">Registrar entrada</a>
+    {% elif a.lote_id %}<a class="btn btn-sm btn-outline-dark" href="{{ url_for('inventory.lote_detalhe', lote_id=a.lote_id) }}">Ver lote</a>{% endif %}
+  </div>
+  {% else %}<div class="alerta-linha ok"><i class="bi bi-check-circle-fill"></i> Nenhum alerta ativo. Seu estoque está em dia!</div>{% endfor %}
+</div></div>
+<div class="card mb-3" id="reposicao"><div class="card-header d-flex justify-content-between align-items-center">
+  <span><i class="bi bi-cart-check"></i> Produtos que precisam de reposição ({{ repor|length }})</span>
+  <button class="btn btn-sm btn-outline-secondary no-print" onclick="window.print()"><i class="bi bi-printer"></i> Imprimir lista de compras</button></div>
+  <div class="card-body p-0">
+  {% if repor %}<div class="table-responsive"><table class="table table-hover mb-0">
+    <thead><tr><th>Produto</th><th class="num">Estoque atual</th><th class="num">Ponto de pedido</th><th class="num">Mínimo</th><th class="num">Máximo</th><th class="num">Comprar (sugestão)</th><th>Situação</th><th class="no-print"></th></tr></thead><tbody>
+    {% for p in repor %}<tr><td><a href="{{ url_for('products.detalhe', produto_id=p.id) }}">{{ p.nome }}</a></td>
+      <td class="num fw-bold">{{ p.estoque_atual|qtd }} {{ p.unidade }}</td><td class="num">{{ p.ponto_pedido|qtd }}</td>
+      <td class="num">{{ p.estoque_minimo|qtd }}</td><td class="num">{{ p.estoque_maximo|qtd }}</td>
+      <td class="num fw-bold text-primary">{{ p.quantidade_sugerida|qtd }} {{ p.unidade }}</td><td>{{ situacao(p) }}</td>
+      <td class="no-print"><a class="btn btn-sm btn-primary" href="{{ url_for('inventory.entrada', produto=p.id) }}"><i class="bi bi-plus-lg"></i> Entrada</a></td></tr>{% endfor %}
+  </tbody></table></div>
+  <p class="small text-muted px-3 py-2 mb-0">Sugestão de compra = estoque máximo − estoque atual (quando não há máximo, 2× o ponto de pedido − atual).</p>
+  {% else %}{{ vazio('Nenhum produto precisa de reposição.', 'emoji-smile') }}{% endif %}
+</div></div>
+{% if historico %}
+<div class="card"><div class="card-header"><i class="bi bi-check2-all"></i> Alertas resolvidos recentemente</div><div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
+  <thead><tr><th>Alerta</th><th>Aberto em</th><th>Resolvido em</th></tr></thead><tbody>
+  {% for a in historico %}<tr><td><small>{{ a.tipo_nome }} — {{ a.mensagem }}</small></td><td><small>{{ a.criado_em|datahora }}</small></td><td><small>{{ a.resolvido_em|datahora }}</small></td></tr>{% endfor %}
+</tbody></table></div></div></div>
+{% endif %}
+{% endblock %}

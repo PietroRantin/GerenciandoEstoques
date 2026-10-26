@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "_macros.html" import mov_badge %}
+{% block title %}Lote {{ lote.numero }}{% endblock %}
+{% block content %}
+<div class="page-title"><div><h1><i class="bi bi-calendar-check"></i> Lote {{ lote.numero }}</h1>
+  <div class="text-muted"><a href="{{ url_for('products.detalhe', produto_id=lote.product_id) }}">{{ lote.produto.nome }}</a></div></div>
+  {% if lote.quantidade > 0 %}<a class="btn btn-outline-danger" href="{{ url_for('inventory.saida', produto=lote.product_id, lote=lote.id) }}"><i class="bi bi-box-arrow-up"></i> Dar saída deste lote</a>{% endif %}</div>
+<div class="row g-3 mb-3">
+  <div class="col-md-4"><div class="card kpi"><div class="card-body"><div class="rotulo">Quantidade em estoque</div><div class="valor">{{ lote.quantidade|qtd }} {{ lote.produto.unidade }}</div></div></div></div>
+  <div class="col-md-4"><div class="card kpi kpi-{{ status[1] }}"><div class="card-body"><div class="rotulo">Validade</div><div class="valor fs-4">{{ lote.validade|data }}</div><span class="badge text-bg-{{ status[1] }}">{{ status[0] }}</span></div></div></div>
+  <div class="col-md-4"><div class="card kpi kpi-info"><div class="card-body"><div class="rotulo">Primeira entrada</div><div class="valor fs-5">{{ lote.criado_em|datahora }}</div></div></div></div>
+</div>
+<div class="card"><div class="card-header">Histórico do lote</div><div class="card-body p-0"><div class="table-responsive"><table class="table mb-0">
+  <thead><tr><th>Data/hora</th><th>Operação</th><th class="num">Quantidade</th><th>Usuário</th><th>Observação</th></tr></thead><tbody>
+  {% for m in movimentos %}<tr><td>{{ m.data_hora|datahora }}</td><td>{{ mov_badge(m) }} <small>{{ m.tipo_nome }}</small></td>
+    <td class="num">{{ '+' if m.natureza == 'entrada' else '−' }}{{ m.quantidade|qtd }}</td><td>{{ m.usuario.nome }}</td>
+    <td><small>{% if m.sale_id %}<a href="{{ url_for('sales.detalhe', venda_id=m.sale_id) }}">Venda nº {{ m.sale_id }}</a>{% else %}{{ m.observacao or '' }}{% endif %}</small></td></tr>{% endfor %}
+</tbody></table></div></div></div>
+{% endblock %}

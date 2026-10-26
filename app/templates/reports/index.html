@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Relatórios{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-file-earmark-text"></i> Relatórios</h1></div>
+<div class="row g-3">
+  {% for endpoint, icone, titulo, texto in [
+    ('reports.estoque', 'clipboard-data', 'Estoque', 'Saldo de todos os produtos, níveis mínimo/máximo, ponto de pedido e situação.'),
+    ('reports.movimentacoes', 'clock-history', 'Movimentações', 'Entradas e saídas por período, produto, tipo e usuário (auditoria).'),
+    ('reports.vendas', 'cart3', 'Vendas', 'Quantidade vendida e faturamento por produto no período.'),
+    ('reports.validade', 'calendar-event', 'Validade', 'Lotes com data de validade, quantidade e situação.'),
+    ('reports.curva_abc', 'bar-chart-steps', 'Curva ABC', 'Quais produtos trazem mais faturamento (classes A, B e C).'),
+  ] %}
+  <div class="col-md-6 col-xl-4"><a class="kpi-link" href="{{ url_for(endpoint) }}"><div class="card h-100"><div class="card-body">
+    <h2 class="h5"><i class="bi bi-{{ icone }} text-primary"></i> {{ titulo }}</h2><p class="text-muted mb-0">{{ texto }}</p></div></div></a></div>
+  {% endfor %}
+</div>
+<p class="small text-muted mt-3">Todos os relatórios podem ser exportados em CSV (abre no Excel/LibreOffice) ou impressos pelo navegador.</p>
+{% endblock %}

@@ -1,0 +1,4 @@
+<div class="d-flex gap-2 no-print">
+  <a class="btn btn-outline-secondary" href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), formato='csv')) }}"><i class="bi bi-filetype-csv"></i> Exportar CSV</a>
+  <button class="btn btn-outline-secondary" type="button" onclick="window.print()"><i class="bi bi-printer"></i> Imprimir</button>
+</div>

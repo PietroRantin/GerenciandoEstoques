@@ -1,0 +1,83 @@
+/* Estoque Fácil — tema simples, alto contraste e alvos de toque grandes. */
+:root {
+  --bs-primary: #0f766e;
+  --bs-primary-rgb: 15, 118, 110;
+  --bs-link-color: #0f766e;
+  --bs-link-color-rgb: 15, 118, 110;
+  --bs-link-hover-color: #115e59;
+  --bs-body-font-size: 1.05rem;
+  --bs-body-bg: #f4f6f8;
+  --cor-topo: #134e4a;
+}
+body { min-height: 100vh; }
+.btn-primary { --bs-btn-bg: #0f766e; --bs-btn-border-color: #0f766e; --bs-btn-hover-bg: #115e59;
+  --bs-btn-hover-border-color: #115e59; --bs-btn-active-bg: #134e4a; --bs-btn-disabled-bg: #0f766e; }
+.btn-outline-primary { --bs-btn-color: #0f766e; --bs-btn-border-color: #0f766e; --bs-btn-hover-bg: #0f766e;
+  --bs-btn-hover-border-color: #0f766e; --bs-btn-active-bg: #115e59; }
+.text-bg-warning { color: #3b2f00 !important; }
+.btn, .form-control, .form-select { min-height: 44px; }
+.btn-sm { min-height: 36px; }
+.form-label { font-weight: 600; }
+:focus-visible { outline: 3px solid #f59e0b !important; outline-offset: 2px; }
+
+.topbar { background: var(--cor-topo); min-height: 60px; }
+.layout { display: flex; min-height: calc(100vh - 60px); }
+.sidebar { width: 230px; background: #fff; border-right: 1px solid #e2e8f0; padding: .75rem .5rem;
+  position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; flex-shrink: 0; }
+.sidebar .nav-link, .sidebar-mobile .nav-link { display: flex; align-items: center; gap: .6rem; color: #1f2937;
+  border-radius: .5rem; padding: .65rem .85rem; font-weight: 500; margin-bottom: 2px; }
+.sidebar .nav-link:hover, .sidebar-mobile .nav-link:hover { background: #ecfdf5; }
+.sidebar .nav-link.active, .sidebar-mobile .nav-link.active { background: #0f766e; color: #fff; }
+.sidebar .nav-link .bi, .sidebar-mobile .nav-link .bi { font-size: 1.2rem; }
+.conteudo { flex: 1; padding: 1.25rem; min-width: 0; max-width: 1400px; }
+@media (max-width: 575.98px) { .conteudo { padding: .75rem; } }
+
+.page-title { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: 1rem; }
+.page-title h1 { font-size: 1.6rem; font-weight: 700; margin: 0; }
+.card { border: 0; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-radius: .75rem; }
+.card-header { background: #fff; font-weight: 700; border-bottom: 1px solid #edf2f7; }
+
+.kpi { border-left: 5px solid #0f766e; height: 100%; }
+.kpi .valor { font-size: 1.9rem; font-weight: 700; line-height: 1.1; }
+.kpi .rotulo { color: #4b5563; font-weight: 500; }
+.kpi.kpi-danger { border-left-color: #dc3545; } .kpi.kpi-warning { border-left-color: #f59e0b; }
+.kpi.kpi-info { border-left-color: #0ea5e9; } .kpi.kpi-success { border-left-color: #16a34a; }
+a.kpi-link { text-decoration: none; color: inherit; display: block; height: 100%; }
+a.kpi-link:hover .card { box-shadow: 0 4px 10px rgba(0,0,0,.12); }
+
+.alerta-linha { display: flex; align-items: center; gap: .75rem; padding: .6rem .75rem; border-radius: .5rem; margin-bottom: .4rem; text-decoration: none; }
+.alerta-linha.critico { background: #fde8e8; color: #7f1d1d; }
+.alerta-linha.alto { background: #fef3c7; color: #78350f; }
+.alerta-linha.medio { background: #e0f2fe; color: #0c4a6e; }
+.alerta-linha.ok { background: #dcfce7; color: #14532d; }
+
+/* Gráfico de barras simples (sem dependências externas) */
+.grafico-barras { display: flex; align-items: flex-end; gap: 4px; height: 180px; padding-top: 1.2rem; }
+.grafico-barras .barra { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; min-width: 0; }
+.grafico-barras .barra .preenchimento { width: 100%; background: #14b8a6; border-radius: 4px 4px 0 0; min-height: 2px; }
+.grafico-barras .barra:hover .preenchimento { background: #0f766e; }
+.grafico-barras .barra .dia { font-size: .7rem; color: #6b7280; margin-top: 2px; white-space: nowrap; }
+.barra-h { background: #e5e7eb; border-radius: 4px; height: 10px; overflow: hidden; }
+.barra-h > div { height: 100%; }
+
+.table { --bs-table-bg: transparent; vertical-align: middle; }
+.table thead th { font-size: .85rem; text-transform: uppercase; letter-spacing: .02em; color: #4b5563; white-space: nowrap; }
+.table-responsive { border-radius: .5rem; }
+.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.logo-login { font-size: 3.5rem; color: #0f766e; }
+.seletor-produto select option { padding: .3rem; }
+.qtd-grande { font-size: 1.4rem; font-weight: 700; }
+.info-produto { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: .5rem; padding: .75rem; }
+@media print { .sidebar, .topbar, .no-print, .btn { display: none !important; } .conteudo { padding: 0; } }
+
+/* Venda no celular: cada item vira um bloco empilhado (sem rolagem lateral) */
+@media (max-width: 575.98px) {
+  #tabela-itens thead { display: none; }
+  #tabela-itens, #tabela-itens tbody { display: block; }
+  #tabela-itens tr.linha-item { display: grid; grid-template-columns: 1fr 1fr auto; gap: .5rem; padding: .75rem 0; border-bottom: 1px solid #e5e7eb; }
+  #tabela-itens tr.linha-item td { display: block; border: 0; padding: 0; }
+  #tabela-itens tr.linha-item td:first-child { grid-column: 1 / -1; }
+  #tabela-itens tr.linha-item td.item-subtotal { grid-column: 1 / 3; text-align: left; }
+  #tabela-itens tr.linha-item td:last-child { grid-column: 3; grid-row: 3; }
+  #tabela-itens .item-subtotal::before { content: "Subtotal: "; font-weight: 400; color: #6b7280; }
+}

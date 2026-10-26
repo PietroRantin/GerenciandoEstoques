@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import campo %}
+{% block title %}{{ 'Editar' if usuario else 'Cadastrar' }} usuário{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-person"></i> {{ 'Editar usuário' if usuario else 'Cadastrar usuário' }}</h1>
+  <a class="btn btn-outline-secondary" href="{{ url_for('admin.usuarios') }}"><i class="bi bi-arrow-left"></i> Voltar</a></div>
+<form method="post" class="card" style="max-width: 720px" novalidate><div class="card-body">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {{ campo('nome', 'Nome completo', dados, erros, obrigatorio=True, valor=usuario.nome if usuario else '', attrs='maxlength="120"') }}
+  {{ campo('email', 'E-mail (usado no login)', dados, erros, tipo='email', obrigatorio=True, valor=usuario.email if usuario else '', attrs='maxlength="120" autocomplete="off"') }}
+  <div class="mb-3"><label class="form-label" for="perfil">Perfil</label>
+    {% set perfil_sel = dados.get('perfil') or (usuario.perfil if usuario else 'operador') %}
+    <select class="form-select {% if erros.perfil %}is-invalid{% endif %}" id="perfil" name="perfil">{% for k, v in perfis.items() %}<option value="{{ k }}" {% if perfil_sel == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+    {% if erros.perfil %}<div class="invalid-feedback">{{ erros.perfil }}</div>{% endif %}</div>
+  <div class="row">
+    {{ campo('senha', 'Senha' if not usuario else 'Nova senha', {}, erros, tipo='password', obrigatorio=not usuario, classe='col-sm-6', ajuda='Mínimo de 6 caracteres.' if not usuario else 'Deixe em branco para manter a senha atual.', attrs='autocomplete="new-password"') }}
+    {{ campo('senha_confirmacao', 'Confirme a senha', {}, erros, tipo='password', obrigatorio=not usuario, classe='col-sm-6', attrs='autocomplete="new-password"') }}
+  </div>
+  {% if usuario %}<div class="form-check form-switch mb-2">
+    <input class="form-check-input {% if erros.ativo %}is-invalid{% endif %}" type="checkbox" role="switch" id="ativo" name="ativo" {% if (dados and dados.get('ativo')) or (not dados and usuario.ativo) %}checked{% endif %}>
+    <label class="form-check-label" for="ativo">Usuário ativo (pode fazer login)</label>{% if erros.ativo %}<div class="invalid-feedback">{{ erros.ativo }}</div>{% endif %}</div>
+  {% else %}<input type="hidden" name="ativo" value="on">{% endif %}
+</div><div class="card-footer bg-white text-end"><button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-check-lg"></i> Salvar</button></div></form>
+{% endblock %}

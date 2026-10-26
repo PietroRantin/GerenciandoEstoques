@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_macros.html" import seletor_produto %}
+{% block title %}Registrar entrada{% endblock %}
+{% block content %}
+<div class="page-title"><h1><i class="bi bi-box-arrow-in-down text-success"></i> Registrar entrada</h1></div>
+<p class="text-muted">Use quando chegar mercadoria (compra), um cliente devolver um produto ou após uma contagem que encontrou a mais.</p>
+<form method="post" class="card" id="form-movimento" data-modo="entrada" data-api="{{ url_for('products.api_produto', produto_id=0) }}" novalidate>
+  <div class="card-body">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+    <div class="col-lg-7">
+      {{ seletor_produto(produtos, dados.get('produto_id', '')) }}
+      <div id="info-produto" class="info-produto mb-3" hidden></div>
+      <div class="row">
+        <div class="col-sm-6 mb-3"><label class="form-label" for="tipo">Tipo de entrada <span class="text-danger">*</span></label>
+          <select class="form-select" id="tipo" name="tipo" required>
+            {% for k, v in tipos.items() %}<option value="{{ k }}" {% if dados.get('tipo', 'compra') == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+        <div class="col-sm-6 mb-3"><label class="form-label" for="quantidade">Quantidade <span class="text-danger">*</span></label>
+          <input class="form-control form-control-lg quantidade" id="quantidade" name="quantidade" inputmode="decimal" required value="{{ dados.get('quantidade', '') }}" placeholder="Ex.: 12"></div>
+      </div>
+      <div class="row campo-lote" hidden>
+        <div class="col-sm-6 mb-3"><label class="form-label" for="lote">Número do lote <span class="text-danger obrig-lote">*</span></label>
+          <input class="form-control" id="lote" name="lote" maxlength="50" value="{{ dados.get('lote', '') }}" placeholder="Impresso na embalagem"></div>
+        <div class="col-sm-6 mb-3 campo-validade"><label class="form-label" for="validade">Data de validade <span class="text-danger obrig-validade">*</span></label>
+          <input class="form-control" type="date" id="validade" name="validade" value="{{ dados.get('validade', '') }}"></div>
+      </div>
+      <div class="mb-3 campo-serie" hidden><label class="form-label" for="numeros_serie">Números de série <span class="text-danger">*</span></label>
+        <textarea class="form-control" id="numeros_serie" name="numeros_serie" rows="3" placeholder="Um por linha (ou separados por vírgula)">{{ dados.get('numeros_serie', '') }}</textarea>
+        <div class="form-text">Informe um número para cada unidade que está entrando.</div></div>
+    </div>
+    <div class="col-lg-5">
+      <div class="mb-3"><label class="form-label" for="valor_unitario">Custo unitário (R$)</label>
+        <input class="form-control dinheiro" id="valor_unitario" name="valor_unitario" inputmode="decimal" value="{{ dados.get('valor_unitario', '') }}" placeholder="Opcional">
+        <div class="form-text">Quanto pagou por unidade nesta compra.</div></div>
+      <div class="mb-3"><label class="form-label" for="observacao">Observação</label>
+        <textarea class="form-control" id="observacao" name="observacao" rows="3" maxlength="255" placeholder="Ex.: nota fiscal 123, fornecedor X">{{ dados.get('observacao', '') }}</textarea></div>
+    </div>
+  </div>
+  </div>
+  <div class="card-footer bg-white d-flex flex-wrap gap-2 justify-content-end">
+    <button class="btn btn-outline-primary btn-lg" type="submit" name="continuar" value="1"><i class="bi bi-plus-circle"></i> Registrar e lançar outra</button>
+    <button class="btn btn-success btn-lg" type="submit"><i class="bi bi-check-lg"></i> Registrar entrada</button>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/movimento.js') }}"></script>{% endblock %}
