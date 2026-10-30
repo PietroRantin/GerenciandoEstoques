@@ -218,7 +218,7 @@ flowchart TD
 flowchart LR
     A[Requisito] --> B[Implementar serviço + tela] --> C[Teste automatizado pytest] --> D{Todos os testes passam?}
     D -- não --> B
-    D -- sim --> E[Commit semântico no Git<br>feat/fix/test/docs] --> F[Push para o GitHub]
+    D -- sim --> E[Commit no Git] --> F[Push para o GitHub]
     F --> G[Implantação: pip install -r requirements.txt<br>python run.py — aplica migrations]
     G --> H[Seed de demonstração + roteiro de aceitação]
 ```

@@ -5,7 +5,7 @@ Sistema web de controle de estoque desenvolvido em **Python (Flask)** para peque
 extensionista **"Desenvolvendo App de Gestão para Pequenos Negócios"** (UNINTER, Bacharelado em
 Ciência da Computação, Atividade Extensionista III).
 
-![Painel inicial](docs/screenshots/02_dashboard_desktop.png)
+![Painel inicial](docs/painel_inicial.png)
 
 ## Objetivo e contexto
 
@@ -36,14 +36,14 @@ um controle **simples, em português claro e sem treinamento extenso**, alinhado
 - Python 3.11+ · Flask 3 · Flask-SQLAlchemy (SQLAlchemy 2) · Flask-Login · Flask-WTF (CSRF) · Flask-Migrate (Alembic)
 - SQLite (padrão) — preparado para PostgreSQL via `DATABASE_URL`
 - HTML5, CSS3, JavaScript puro e Bootstrap 5 **embutido no projeto** (funciona sem internet)
-- pytest + pytest-cov; Playwright (opcional, para screenshots e teste no navegador)
+- pytest + pytest-cov; Playwright (opcional, usado só pelo script de validação por cenários)
 
 ## Instalação e execução
 
 Pré-requisito: Python 3.11 ou superior.
 
 ```bash
-git clone <url-do-repositorio> && cd GerenciadorDeEstoque
+git clone https://github.com/PietroRantin/GerenciandoEstoques.git && cd GerenciandoEstoques
 python -m venv .venv
 # Windows: .venv\Scripts\activate    |   Linux/macOS: source .venv/bin/activate
 pip install -r requirements.txt
@@ -74,6 +74,20 @@ flask --app run criar-admin        # cria um administrador
 flask --app run verificar-saldos   # confere saldo de cada produto x histórico de movimentações
 flask --app run db upgrade         # aplica migrations (evolução do banco)
 ```
+
+## Testes e validação
+
+```bash
+python -m pytest --cov=app                                  # 94 testes automatizados, com cobertura
+pip install playwright && python scripts/validacao_cenarios.py   # 4 cenários de negócio com dados simulados
+```
+
+## Documentação
+
+- [Matriz de rastreabilidade (requisito → código → teste)](docs/MATRIZ_RASTREABILIDADE.md)
+- [Validação por cenários de comércios de bairro](docs/VALIDACAO_CENARIOS.md)
+- [Arquitetura, modelo de dados e casos de uso](docs/ARQUITETURA.md)
+- [Evidências de testes](docs/TESTES.md) · [Roteiro de aceitação](docs/ROTEIRO_TESTE_MANUAL.md)
 
 ## Autor
 

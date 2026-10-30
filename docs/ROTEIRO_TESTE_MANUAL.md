@@ -1,7 +1,7 @@
 # Roteiro de teste manual de aceitação
 
 **Pré-condição:** `python -m seed.seed` e `python run.py`; abrir http://localhost:5000.
-Este mesmo roteiro está automatizado em `scripts/teste_aceitacao_navegador.py` (Chromium real).
+Este mesmo roteiro também é verificado automaticamente em `tests/test_views.py::test_roteiro_de_aceitacao_completo`.
 
 | # | Ação | Resultado esperado | Resultado obtido |
 |---|---|---|---|
