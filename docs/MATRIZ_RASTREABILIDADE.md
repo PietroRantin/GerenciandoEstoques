@@ -5,7 +5,7 @@ RNF-001 a RNF-005) e do **escopo detalhado de desenvolvimento** à funcionalidad
 implementa e ao teste que a verifica.
 
 Legenda de testes: `tests/<arquivo>::<teste>`. "Aceitação" = passo do
-[roteiro manual](ROTEIRO_TESTE_MANUAL.md), também automatizado em `scripts/teste_aceitacao_navegador.py`.
+[roteiro manual](ROTEIRO_TESTE_MANUAL.md), também verificado em `tests/test_views.py::test_roteiro_de_aceitacao_completo`.
 
 ## Requisitos funcionais da proposta
 
@@ -25,7 +25,7 @@ Legenda de testes: `tests/<arquivo>::<teste>`. "Aceitação" = passo do
 | **RNF-001** Consulta de saldo ≤ 2 s | Saldo mantido na tabela de produtos (leitura por chave primária) + índices; listas paginadas e filtradas no banco | `tests/test_performance.py` — ~0,2 ms por consulta com 1.500 produtos e 100.000 movimentações | ✅ |
 | **RNF-002** Integridade dos dados / disponibilidade 99,9% | Integridade: transações, UPDATE atômico condicionado, chaves únicas, movimentações imutáveis, comando `verificar-saldos`. Disponibilidade depende da hospedagem | `test_saldo_bate_com_historico`, `flask verificar-saldos` | ✅ integridade / ⚠️ disponibilidade: depende de infraestrutura (fora do escopo) |
 | **RNF-003** Altas movimentações por hora sem degradação | Registro de movimentação com índices; teste com histórico de 100 mil registros | `test_performance.py` (registro < 0,5 s com histórico cheio) | ✅ |
-| **RNF-004** Interface web responsiva, uso em campo (coletores) | Layout responsivo (computador/tablet/celular), botões ≥ 44 px, busca por código de barras com Enter (leitores USB/Bluetooth funcionam como teclado) | `docs/screenshots/*_celular.png`, `static/js/app.js`, `static/js/venda.js` | ✅ |
+| **RNF-004** Interface web responsiva, uso em campo (coletores) | Layout responsivo (computador/tablet/celular), botões ≥ 44 px, busca por código de barras com Enter (leitores USB/Bluetooth funcionam como teclado) | `docs/validacao/c5_alertas_celular.png`, `static/js/app.js`, `static/js/venda.js` | ✅ |
 | **RNF-005** Toda alteração de saldo registrada com data, hora e usuário | Tabela `movimentacoes` (usuário, data/hora, tipo, quantidade, saldo após, lote/série); não há edição/exclusão de movimentações; o saldo não é editável no cadastro | `test_inventory.py::test_movimentacao_registra_auditoria`, `test_views.py::test_estoque_nao_editavel_pelo_cadastro`, `::test_operador_registra_movimento_e_auditoria` | ✅ |
 
 ## Requisitos do escopo detalhado de desenvolvimento

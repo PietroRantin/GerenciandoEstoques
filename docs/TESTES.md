@@ -12,7 +12,6 @@ Executado em 06/10/2026 com Python 3.13.16 — comando `python -m pytest -v --co
 | Cobertura de código | 90% |
 | Desempenho (RNF-001) | saldo: 0.159 ms/consulta com 100000 movimentações (1.500 produtos) — limite: 2 s |
 | Integridade após simular 90 dias (`flask verificar-saldos`) | Todos os saldos conferem com o histórico. |
-| Roteiro de aceitação no navegador (`scripts/teste_aceitacao_navegador.py`) | 17 de 17 passos aprovados |
 
 ## O que cada arquivo de teste cobre
 
