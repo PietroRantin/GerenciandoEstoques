@@ -75,60 +75,6 @@ flask --app run verificar-saldos   # confere saldo de cada produto x histórico 
 flask --app run db upgrade         # aplica migrations (evolução do banco)
 ```
 
-## Testes
-
-```bash
-python -m pytest                       # todos os testes
-python -m pytest --cov=app             # com cobertura
-python scripts/metricas.py             # gera docs/METRICAS.md
-# Com o sistema rodando e o Playwright instalado (pip install playwright && playwright install chromium):
-python scripts/teste_aceitacao_navegador.py http://127.0.0.1:5000
-python scripts/capturar_telas.py http://127.0.0.1:5000
-```
-
-Resultados atuais: ver [docs/TESTES.md](docs/TESTES.md) e [docs/METRICAS.md](docs/METRICAS.md).
-
-## Estrutura
-
-```
-app/
-├── __init__.py          # fábrica da aplicação, tratamento de erros, comandos CLI
-├── config.py            # configurações + parâmetros de negócio centralizados
-├── models/              # tabelas (SQLAlchemy)
-├── services/            # REGRAS DE NEGÓCIO (estoque, alertas, vendas, ABC, relatórios)
-├── routes/              # telas (blueprints Flask) — só chamam os serviços
-├── templates/           # páginas HTML (Jinja2)
-├── static/              # CSS/JS próprios + Bootstrap embutido
-└── utils/               # formatação BR, conversão de valores, permissões, CSV
-migrations/              # evolução do banco (Alembic)
-seed/                    # dados de demonstração
-tests/                   # testes automatizados (pytest)
-scripts/                 # métricas, screenshots, teste no navegador
-docs/                    # documentação técnica e acadêmica
-run.py                   # ponto de entrada
-```
-
-## Documentação
-
-- [Matriz de rastreabilidade (requisito → implementação → teste)](docs/MATRIZ_RASTREABILIDADE.md)
-- [Arquitetura, banco de dados e diagramas](docs/ARQUITETURA.md)
-- [Roteiro de teste manual de aceitação](docs/ROTEIRO_TESTE_MANUAL.md)
-- [Evidências de testes](docs/TESTES.md) · [Métricas](docs/METRICAS.md) · [Validação por cenários](docs/VALIDACAO_CENARIOS.md)
-- [Relatório acadêmico: metodologia, resultados e considerações finais](docs/RELATORIO_ACADEMICO.md)
-- [Screenshots](docs/screenshots/)
-
-## Limitações conhecidas
-
-- Não emite documentos fiscais (NF-e/NFC-e/cupom) e não integra com maquininhas ou bancos — está fora do escopo.
-- Alertas são exibidos no sistema; **não há envio de e-mail** (item desejável P2 não implementado).
-- O SQLite atende bem um comércio com poucos usuários simultâneos. Para várias lojas ou muitos acessos
-  simultâneos, recomenda-se PostgreSQL (`DATABASE_URL`) e um servidor WSGI (ex.: `waitress`/`gunicorn`).
-- A disponibilidade de 99,9% (RNF-002) depende da hospedagem; o projeto entrega a aplicação pronta para
-  ser hospedada, mas não inclui infraestrutura de alta disponibilidade.
-- Na venda, produtos com número de série têm as unidades escolhidas automaticamente (as mais antigas);
-  para escolher a unidade exata, use **Saída** com o tipo "Venda".
-- Não há recuperação de senha por e-mail: o administrador redefine a senha em **Usuários**.
-
 ## Autor
 
 Pietro Rantin Venâncio — RU 4739736 — UNINTER, Bacharelado em Ciência da Computação.
